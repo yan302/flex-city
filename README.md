@@ -9,7 +9,7 @@
 | **01 喚醒城市** / Wake Up | 一條沉睡的街道甦醒過來 | `display: flex` |
 | **02 向上開發** / Vertical Stack | 土地有限，蓋一棟五層樓 | `flex-direction: column-reverse` |
 | **03 貓咪咖啡** / Cat Café | 讓每隻貓都有剛剛好的距離 | `justify-content` + `align-items` |
-| **04** | （置中對齊） | `justify-content` / `align-items` |
+| **04 星空暗號** / F·L·E·X | 讓鐘樓與滿月精準重疊，星座暗號顯現 | `justify-content: center` + `align-items: center` |
 | **05 夜市開張** / Night Market | 攤位太多放不下，自動換行 | `flex-wrap: wrap` + `row-gap` |
 
 ## ✨ 特色

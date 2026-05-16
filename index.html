@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flex City — 關卡選擇</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Space+Mono&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --paper:#fefdfb; --ink:#0e0c09; --red:#e60012; --dim:#8a8278; --rule:#c8c2b8;
+    }
+    body {
+      background-color: var(--paper);
+      color: var(--ink);
+      font-family: 'Noto Sans TC', sans-serif;
+      /* Felt texture at ~45% (55% lighter overlay = transparency halved) */
+      background-image:
+        linear-gradient(rgba(254, 253, 251, 0.55), rgba(254, 253, 251, 0.55)),
+        url('https://www.transparenttextures.com/patterns/felt.png');
+      min-height: 100vh;
+    }
+
+    .brand-logo {
+      font-family: 'Space Mono', monospace;
+      letter-spacing: -.02em;
+    }
+
+    .level-card {
+      background: #fff;
+      border: 2.5px solid var(--ink);
+      box-shadow: 6px 6px 0 var(--ink);
+      padding: 28px 30px;
+      cursor: pointer;
+      transition: transform .2s cubic-bezier(.34,1.4,.64,1), box-shadow .2s;
+      text-decoration: none;
+      color: var(--ink);
+      display: block;
+      position: relative;
+      overflow: hidden;
+    }
+    .level-card:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 9px 9px 0 var(--ink);
+    }
+    .level-card:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0 var(--ink);
+    }
+    .level-tag {
+      font-family: 'Space Mono', monospace;
+      font-size: .68rem;
+      color: var(--dim);
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .level-no {
+      font-size: 5rem;
+      font-weight: 900;
+      font-style: italic;
+      line-height: .9;
+      letter-spacing: -.02em;
+      color: var(--ink);
+      opacity: .12;
+      position: absolute;
+      right: 18px;
+      top: 10px;
+    }
+    .level-title {
+      font-size: 1.45rem;
+      font-weight: 900;
+      letter-spacing: -.01em;
+      margin-bottom: 4px;
+    }
+    .level-sub {
+      font-size: .72rem;
+      font-family: 'Space Mono', monospace;
+      letter-spacing: .1em;
+      color: var(--dim);
+      margin-bottom: 14px;
+    }
+    .level-desc {
+      font-size: .82rem;
+      line-height: 1.65;
+      color: #3a3530;
+    }
+    .level-cta {
+      margin-top: 16px;
+      font-size: .72rem;
+      font-weight: 900;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .level-cta::after { content: '→'; transition: transform .2s; }
+    .level-card:hover .level-cta::after { transform: translateX(4px); }
+  </style>
+</head>
+
+<body class="p-4 md:p-10">
+
+  <div class="max-w-5xl mx-auto flex flex-col gap-10">
+
+    <nav class="flex items-end justify-between border-b-2 border-black pb-4">
+      <div class="flex items-center gap-4">
+        <div class="w-10 h-10 rounded-full border-2 border-black flex items-center justify-center font-black bg-white shadow-[2px_2px_0_black] brand-logo">F</div>
+        <h1 class="text-2xl font-black italic tracking-tighter uppercase leading-none">Flex City</h1>
+      </div>
+      <span class="text-[10px] font-mono opacity-50 uppercase tracking-[0.2em]">Flexbox Edition</span>
+    </nav>
+
+    <header class="mt-2">
+      <div class="text-[10px] font-mono opacity-50 uppercase tracking-[0.25em] mb-2">CHAPTER SELECT</div>
+      <h2 class="text-4xl md:text-5xl font-black italic leading-tight">Flex City：用 Flexbox 打造城市生活</h2>
+      <p class="font-bold opacity-60 text-sm mt-3 max-w-xl leading-relaxed">
+        從街道、貓咪咖啡廳到夜市，一步步學會 Flexbox 排版，打造屬於你的城市生活節奏。
+      </p>
+    </header>
+
+    <main class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <!-- LEVEL 01 -->
+      <a class="level-card" href="./level-01/index.html">
+        <div class="level-no">01</div>
+        <div class="level-tag">LEVEL 01</div>
+        <div class="level-title">喚醒城市</div>
+        <div class="level-sub">WAKE UP</div>
+        <p class="level-desc">街道正在沉睡。啟動第一個 Flex 指令，讓散落的建築物醒過來，並排成一座城市天際線。</p>
+        <div class="level-cta">開始挑戰</div>
+      </a>
+
+      <!-- LEVEL 02 -->
+      <a class="level-card" href="./level-02/index.html">
+        <div class="level-no">02</div>
+        <div class="level-tag">LEVEL 02</div>
+        <div class="level-title">向上開發</div>
+        <div class="level-sub">VERTICAL STACK</div>
+        <p class="level-desc">土地有限，只能向天空發展。試著把「商店、停車場、辦公室、餐廳、頂樓」堆疊成一棟完整的大樓。城市的骨架，開始向上延伸。</p>
+        <div class="level-cta">開始挑戰</div>
+      </a>
+
+      <!-- LEVEL 03 -->
+      <a class="level-card" href="./level-03/index.html">
+        <div class="level-no">03</div>
+        <div class="level-tag">LEVEL 03</div>
+        <div class="level-title">貓咪咖啡</div>
+        <div class="level-sub">CAT CAFÉ</div>
+        <p class="level-desc">貓咪咖啡廳開幕了。每隻貓都需要剛剛好的距離，請調整牠們的位置與空間分配，讓牠們舒適地待在同一個空間。</p>
+        <div class="level-cta">開始挑戰</div>
+      </a>
+
+      <!-- LEVEL 04 -->
+      <a class="level-card" href="./level-04/index.html">
+        <div class="level-no">04</div>
+        <div class="level-tag">LEVEL 04</div>
+        <div class="level-title">星空暗號</div>
+        <div class="level-sub">F·L·E·X CONSTELLATION</div>
+        <p class="level-desc">夜幕降臨。當鐘樓與滿月精準重疊，隱藏在夜空中的星座暗號將會顯現。</p>
+        <div class="level-cta">開始挑戰</div>
+      </a>
+
+      <!-- LEVEL 05 -->
+      <a class="level-card" href="./level-05/index.html">
+        <div class="level-no">05</div>
+        <div class="level-tag">LEVEL 05</div>
+        <div class="level-title">夜市擴張</div>
+        <div class="level-sub">NIGHT MARKET</div>
+        <p class="level-desc">夜市突然多了許多新攤位。單排街道已經無法容納所有攤位，請重新安排位置與間距，打造更流暢的夜市動線。</p>
+        <div class="level-cta">開始挑戰</div>
+      </a>
+
+    </main>
+
+    <footer class="mt-6 pt-6 border-t border-black/15 flex justify-between items-end text-[10px] font-mono opacity-50 uppercase tracking-[0.2em]">
+      <span>FLEX CITY · 2026 · YAN</span>
+      <span>05 / 05 levels — All complete</span>
+    </footer>
+
+  </div>
+
+</body>
+</html>

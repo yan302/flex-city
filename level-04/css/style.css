@@ -1,0 +1,566 @@
+/* ============================================================
+   Skyline Architect — Level 04 / Starry Constellation
+   level-04/css/style.css
+   ============================================================ */
+
+:root {
+  --paper:       #fefdfb;
+  --ink:         #0e0c09;
+  --beams-red:   #e60012;
+  --rule:        #c8c2b8;
+  --dim:         #8a8278;
+  --night-sky:   #0f172a;
+  --moon-light:  #fef08a;
+  --tower-color: #1e293b;
+  --gold:        #fbbf24;
+  --indigo:      #4338ca;
+}
+
+body {
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: 'Noto Sans TC', sans-serif;
+  overflow-x: hidden;
+  background-image:
+    linear-gradient(rgba(254, 253, 251, 0.55), rgba(254, 253, 251, 0.55)),
+    url('https://www.transparenttextures.com/patterns/felt.png');
+  transition: background-color 1s ease;
+}
+
+/* ── INFO CARD (family reference) — override old indigo styling ── */
+.info-card {
+  background: #fff;
+  border: 2px solid var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
+  padding: 18px 20px;
+}
+.info-card-title {
+  font-family: 'Space Mono', monospace;
+  font-weight: 900;
+  font-size: .68rem;
+  color: var(--ink);
+  text-transform: uppercase;
+  letter-spacing: .15em;
+  margin-bottom: 12px;
+}
+.family-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.family-list li {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  font-size: .8rem;
+  line-height: 1.55;
+  flex-wrap: wrap;
+}
+.family-list code {
+  font-family: 'Space Mono', monospace;
+  background: rgba(14, 12, 9, 0.07);
+  padding: 3px 8px;
+  border-radius: 2px;
+  font-size: .74rem;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.family-list span {
+  font-weight: 600;
+  color: #3a3530;
+}
+.family-note {
+  font-size: .78rem;
+  line-height: 1.6;
+  color: #3a3530;
+  margin: 10px 0;
+}
+.family-note code {
+  font-family: 'Space Mono', monospace;
+  background: rgba(14, 12, 9, 0.07);
+  padding: 1px 5px;
+  border-radius: 2px;
+  font-size: .72rem;
+  font-weight: 700;
+}
+.family-conclusion {
+  font-size: .82rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--rule);
+}
+.family-conclusion strong {
+  color: var(--indigo);
+}
+
+/* ── NIGHT CANVAS ───────────────────────────── */
+.night-canvas {
+  width: 100%;
+  height: 500px;
+  background: var(--night-sky);
+  border: 3px solid var(--ink);
+  position: relative;
+  box-shadow: 6px 6px 0 var(--ink);
+  overflow: hidden;
+  transition: background 0.8s ease;
+}
+
+.is-success .night-canvas {
+  background: radial-gradient(circle at 50% 45%, #1e293b 0%, #0f172a 70%);
+}
+
+/* ── MOON ───────────────────────────────────── */
+.moon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 180px;
+  height: 180px;
+  background: var(--moon-light);
+  border-radius: 50%;
+  box-shadow: 0 0 60px rgba(254, 240, 138, 0.4);
+  z-index: 1;
+  transition: box-shadow 0.8s ease;
+}
+.is-success .moon {
+  box-shadow: 0 0 90px rgba(251, 191, 36, 0.7);
+}
+
+/* ── MOON BEAMS ─────────────────────────────── */
+.moon-beams {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 1s ease;
+  pointer-events: none;
+}
+.is-success .moon-beams { opacity: 0.6; }
+
+.beam {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold), transparent);
+  transform-origin: left center;
+}
+
+/* ── CONSTELLATION ──────────────────────────── */
+.constellation-container {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.star-point {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translate(-50%, -50%);
+  transition: all 0.8s ease;
+}
+.star-icon {
+  color: white;
+  font-size: 18px;
+  text-shadow: 0 0 5px white;
+  animation: twinkle 2s infinite alternate;
+}
+.star-letter {
+  font-family: 'Space Mono', monospace;
+  font-weight: 900;
+  color: var(--gold);
+  font-size: 28px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.5s ease;
+  margin-bottom: 2px;
+  letter-spacing: .05em;
+}
+
+.is-success .star-letter {
+  opacity: 1;
+  transform: translateY(0);
+}
+.is-success .star-icon {
+  color: var(--gold);
+  text-shadow: 0 0 20px var(--gold);
+}
+
+@keyframes twinkle {
+  from { opacity: 0.4; transform: scale(0.9); }
+  to   { opacity: 1;   transform: scale(1.1); }
+}
+
+/* ── CONSTELLATION SVG ──────────────────────── */
+.constellation-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  stroke: var(--gold);
+  stroke-width: 2;
+  fill: none;
+  stroke-dasharray: 1200;
+  stroke-dashoffset: 1200;
+  transition: stroke-dashoffset 2.5s ease 0.4s;
+  opacity: 0.55;
+}
+.is-success .constellation-svg { stroke-dashoffset: 0; }
+
+/* ── LIVE VIEW (flex container under user control) ── */
+#live-view {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  /* user adds justify-content / align-items */
+}
+
+/* ── CLOCK TOWER ────────────────────────────── */
+.clock-tower {
+  width: 80px;
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+  pointer-events: none;
+  transition: filter 0.6s ease;
+}
+.is-success .clock-tower {
+  filter: drop-shadow(0 0 18px rgba(251, 191, 36, 0.5));
+}
+
+.tower-top {
+  width: 0;
+  height: 0;
+  border-left: 40px solid transparent;
+  border-right: 40px solid transparent;
+  border-bottom: 60px solid var(--tower-color);
+}
+
+.tower-body {
+  width: 60px;
+  flex-grow: 1;
+  background: var(--tower-color);
+  border: 4px solid var(--ink);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 20px;
+  gap: 14px;
+}
+
+.clock-face {
+  width: 44px;
+  height: 44px;
+  background: #f1f5f9;
+  border: 4px solid var(--ink);
+  border-radius: 50%;
+  transition: all 0.4s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.is-success .clock-face {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--gold);
+  box-shadow: 0 0 30px var(--gold);
+  backdrop-filter: blur(4px);
+}
+
+.window-dot {
+  width: 14px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-radius: 7px 7px 0 0;
+}
+
+/* ── PASS STAMP (inside editor, matches other levels) ── */
+#pass-stamp {
+  position: absolute;
+  top: 62%; left: 65%;
+  transform: translate(-50%,-50%) rotate(-12deg) scale(0);
+  opacity: 0; pointer-events: none;
+  transition: transform .4s cubic-bezier(.175,.885,.32,1.275), opacity .2s ease;
+  z-index: 20;
+  color: var(--beams-red);
+  border: 6px solid var(--beams-red);
+  border-radius: 5px; padding: 5px 17px;
+  font-weight: 900; font-size: 2rem;
+  letter-spacing: .1em;
+  background: rgba(255,255,255,.95);
+  white-space: nowrap; user-select: none;
+}
+#pass-stamp.active {
+  transform: translate(-50%,-50%) rotate(-12deg) scale(1);
+  opacity: 1;
+}
+
+/* ── LABEL LINE ─────────────────────────────── */
+.label-line {
+  text-transform: uppercase; font-weight: 900;
+  letter-spacing: .15em; display: flex;
+  align-items: center; gap: 12px;
+  margin-bottom: 8px; font-size: .72rem;
+}
+.label-line::after {
+  content: ""; flex-grow: 1;
+  height: 1.5px; background-color: var(--ink);
+}
+
+/* ── EDITOR ─────────────────────────────────── */
+.editor-container {
+  background: #fff;
+  border: 3px solid var(--ink);
+  box-shadow: 6px 6px 0 var(--ink);
+  position: relative;
+}
+
+textarea {
+  font-family: 'Space Mono', monospace;
+  background: transparent; resize: none; outline: none;
+  width: 100%; line-height: 1.6; font-size: 1.05rem;
+}
+
+/* ── PROGRESS HINT BANNER ───────────────────── */
+.progress-hint {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #eef2ff;
+  border: 2px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  padding: 10px 16px;
+  font-size: .82rem;
+  font-weight: 700;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity .25s, transform .25s;
+  pointer-events: none;
+}
+.progress-hint.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+.ph-icon {
+  background: var(--indigo);
+  color: var(--gold);
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .85rem;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+/* ── INFO CARDS ─────────────────────────────── */
+.info-card {
+  background: #fff;
+  border: 2px solid var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
+  padding: 14px 16px;
+}
+.info-card-title {
+  font-family: 'Space Mono', monospace;
+  font-weight: 900;
+  font-size: .65rem;
+  color: var(--indigo);
+  text-transform: uppercase;
+  letter-spacing: .15em;
+  margin-bottom: 6px;
+}
+.info-card-desc {
+  font-size: .72rem;
+  font-weight: 700;
+  line-height: 1.55;
+}
+.info-card-desc code {
+  background: rgba(67, 56, 202, 0.1);
+  padding: 1px 4px;
+  border-radius: 2px;
+  font-size: .68rem;
+}
+
+/* ── EMMET DROPDOWN ─────────────────────────── */
+#emmet-drop {
+  position: fixed; display: none;
+  background: var(--paper);
+  border: 1.5px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  z-index: 900; overflow: hidden;
+  min-width: 320px; max-height: 220px; overflow-y: auto;
+}
+
+.e-head {
+  padding: 4px 12px;
+  border-bottom: 1px solid var(--rule);
+  font-family: 'Space Mono', monospace;
+  font-size: .58rem; color: var(--dim);
+  letter-spacing: .1em; text-transform: uppercase;
+  display: flex; justify-content: space-between;
+}
+
+.e-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 14px; cursor: pointer;
+  border-bottom: 1px solid var(--rule);
+  font-family: 'Space Mono', monospace;
+  font-size: .74rem; line-height: 1.5;
+  transition: background .08s;
+}
+.e-item:last-child { border-bottom: none; }
+.e-item.sel, .e-item:hover { background: var(--ink); color: var(--paper); }
+
+.e-abbr { min-width: 52px; font-weight: 700; letter-spacing: .02em; }
+.e-typed { text-decoration: underline; text-underline-offset: 3px; font-weight: 900; }
+.e-rest  { opacity: .45; }
+.e-item.sel .e-rest, .e-item:hover .e-rest { opacity: .6; }
+.e-arr   { flex-shrink: 0; font-size: .62rem; opacity: .4; }
+.e-val   { color: var(--dim); flex: 1; }
+.e-item.sel .e-val, .e-item:hover .e-val { color: rgba(249,246,240,.75); }
+
+.e-hint {
+  padding: 3px 12px;
+  font-family: 'Space Mono', monospace;
+  font-size: .58rem; color: var(--dim);
+  letter-spacing: .04em;
+  border-top: 1px solid var(--rule);
+  background: #ece6db;
+}
+
+/* ── MODAL ──────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(15, 23, 42, 0.78);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity .25s;
+}
+.modal-overlay.on { opacity: 1; pointer-events: all; }
+
+.modal-card {
+  background: #fff;
+  border: 2px solid var(--ink);
+  box-shadow: 8px 8px 0 var(--gold);
+  padding: 36px 44px;
+  text-align: center;
+  max-width: 380px; width: 90%;
+  transform: translateY(16px) scale(.95);
+  transition: transform .35s cubic-bezier(.34,1.4,.64,1);
+}
+.modal-overlay.on .modal-card { transform: translateY(0) scale(1); }
+
+.modal-seal {
+  width: 80px; height: 80px;
+  border: 3px solid var(--gold);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 18px; position: relative;
+  transform: rotate(-14deg);
+}
+.modal-overlay.on .modal-seal {
+  animation: stampIn .4s cubic-bezier(.34,1.4,.64,1) both;
+}
+@keyframes stampIn {
+  from { transform: rotate(-25deg) scale(1.6); opacity: 0; }
+  to   { transform: rotate(-14deg) scale(1);   opacity: 1; }
+}
+.modal-seal::before {
+  content: ''; position: absolute; inset: 5px;
+  border: 1px solid var(--gold); border-radius: 50%;
+}
+.modal-seal-text {
+  color: var(--gold);
+  font-size: .65rem; font-weight: 900;
+  letter-spacing: .06em; line-height: 1.3; text-align: center;
+}
+
+.modal-title {
+  font-size: 1.15rem; font-weight: 900;
+  margin-bottom: 6px; letter-spacing: -.01em;
+}
+.modal-prop {
+  font-family: 'Space Mono', monospace;
+  font-size: .72rem;
+  background: rgba(67, 56, 202, 0.08);
+  border: 1px solid var(--rule);
+  padding: 6px 14px; display: inline-block;
+  margin-bottom: 8px; white-space: pre;
+  text-align: left;
+}
+.modal-desc {
+  font-size: .78rem; color: var(--dim);
+  line-height: 1.55; margin-bottom: 20px;
+}
+.modal-stars { font-size: 1.3rem; letter-spacing: 4px; margin-bottom: 22px; color: var(--gold); }
+
+.btn-next-level {
+  background: var(--ink); color: var(--gold);
+  border: none; cursor: pointer;
+  padding: 11px 32px;
+  font-family: 'Noto Sans TC', sans-serif;
+  font-weight: 900; font-size: .9rem;
+  letter-spacing: .04em;
+  transition: background .15s;
+}
+.btn-next-level:hover { background: #2a2620; }
+
+/* ════════════════════════════════════════════════════════════
+   INLINE NEXT-LEVEL BUTTON (page-level, beside RESET)
+   ── 平常隱藏，body.is-success 加上後才現身
+   ════════════════════════════════════════════════════════════ */
+.next-inline-btn {
+  background: var(--ink, #0e0c09);
+  color: var(--paper, #f9f6f0);
+  border: 2px solid var(--ink, #0e0c09);
+  cursor: pointer;
+  padding: 7px 18px;
+  font-family: 'Noto Sans TC', sans-serif;
+  font-weight: 900;
+  font-size: .75rem;
+  letter-spacing: .08em;
+  box-shadow: 4px 4px 0 #9b9b99;
+  opacity: 0;
+  transform: translateY(4px) scale(.96);
+  pointer-events: none;
+  transition: opacity .35s ease, transform .35s cubic-bezier(.34,1.4,.64,1),
+              box-shadow .15s, background .15s;
+}
+.next-inline-btn span {
+  display: inline-block;
+  transition: transform .25s ease;
+}
+.is-success .next-inline-btn {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+  animation: nextBtnPulse 1.8s ease 1.2s 2;
+}
+.next-inline-btn:hover { background: #2a2620; }
+.next-inline-btn:hover span { transform: translateX(4px); }
+.next-inline-btn--finish:hover span { transform: scale(1.2) rotate(-8deg); }
+.next-inline-btn:active {
+  box-shadow: none;
+  transform: translate(4px, 4px);
+}
+
+@keyframes nextBtnPulse {
+  0%, 100% { box-shadow: 4px 4px 0 #9b9b99; }
+  50%      { box-shadow: 6px 6px 0 #7a7a78; }
+}

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flex City — 01 喚醒城市</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Space+Mono&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+
+<body class="p-4 md:p-8" id="game-body">
+
+  <div class="max-w-7xl mx-auto flex flex-col gap-8">
+
+    <!-- ════════════════════════════════════════ HEADER ════════════════════════════════════════ -->
+    <nav class="flex items-end justify-between border-b-2 border-black pb-4">
+      <div class="flex items-center gap-4">
+        <a href="../index.html" class="w-10 h-10 rounded-full border-2 border-black flex items-center justify-center font-black bg-white shadow-[2px_2px_0_black] hover:bg-black hover:text-white transition-all font-mono">F</a>
+        <h1 class="text-2xl font-black italic tracking-tighter uppercase leading-none">Flex City</h1>
+      </div>
+      <div class="text-right">
+        <div class="text-4xl font-black italic opacity-20 leading-none">01 / 05</div>
+        <div class="w-48 h-2 bg-gray-200 mt-2 relative overflow-hidden">
+          <div class="absolute top-0 left-0 h-full bg-black transition-all duration-700" style="width:20%"></div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ════════════════════════════════════════ MAIN LAYOUT ════════════════════════════════════════ -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mt-4">
+
+      <!-- LEFT: brief + editor -->
+      <div class="flex flex-col gap-6">
+
+        <section>
+          <h2 class="text-3xl font-black mb-2 leading-tight">01 喚醒城市 / WAKE UP</h2>
+          <p class="font-bold opacity-70 text-sm leading-relaxed">
+            街道正在沉睡。啟動第一個 Flex 指令，讓散落的建築物醒過來，並排成一座城市天際線。
+          </p>
+        </section>
+
+        <!-- Code editor -->
+        <div class="editor-container p-6">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex gap-2">
+              <div class="w-3 h-3 rounded-full bg-red-400"></div>
+              <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+              <div class="w-3 h-3 rounded-full bg-green-400"></div>
+            </div>
+            <span class="text-[10px] font-mono opacity-40 uppercase tracking-[0.2em]">flexbox_engine_v3</span>
+          </div>
+
+          <div class="font-mono text-lg">
+            <div class="text-blue-700 font-bold">#live-city <span class="text-black">{</span></div>
+            <div class="pl-8">
+              <textarea id="css-editor" rows="3"
+                placeholder="/* 輸入縮寫後按 Tab，如: df */"
+                spellcheck="false"></textarea>
+            </div>
+            <div class="text-black font-bold">}</div>
+          </div>
+
+          <div id="pass-stamp">PASSED</div>
+        </div>
+
+        <div class="flex items-center justify-between gap-4">
+          <div class="flex gap-2 items-center">
+            <kbd class="bg-black text-white px-2 py-1 rounded text-[10px] font-mono">TAB</kbd>
+            <span class="text-[10px] font-bold opacity-50 uppercase self-center">Emmet Ready (df, fdc, jcc, aife…)</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <button id="reset-btn"
+              class="font-black text-xs border-2 border-black px-6 py-2
+                     hover:bg-black hover:text-white transition-all
+                     shadow-[4px_4px_0_black] active:shadow-none active:translate-x-1 active:translate-y-1">
+              RESET
+            </button>
+            <button id="next-level-inline-btn"
+              class="next-inline-btn"
+              onclick="window.location.href='../level-02/index.html'">
+              下一關 <span aria-hidden="true">→</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: target + live -->
+      <div class="flex flex-col gap-6">
+
+        <div>
+          <div class="label-line">TARGET / 目標</div>
+          <div id="target-city" class="city-grid">
+            <div class="ground-strip"></div>
+            <img src="./assets/b-1.svg" alt="" class="building b-1">
+            <img src="./assets/b-2.svg" alt="" class="building b-2">
+            <img src="./assets/b-3.svg" alt="" class="building b-3">
+            <img src="./assets/b-4.svg" alt="" class="building b-4">
+            <img src="./assets/b-5.svg" alt="" class="building b-5">
+            <img src="./assets/b-6.svg" alt="" class="building b-6">
+          </div>
+        </div>
+
+        <div>
+          <div class="label-line">SKYLINE / 城市天際線</div>
+          <div id="live-city" class="city-grid grid-bg">
+            <div class="ground-strip"></div>
+            <div class="clouds">
+              <svg class="absolute top-10 left-10 opacity-60" width="100" viewBox="0 0 100 40">
+                <path d="M10,30 Q10,10 30,10 Q40,0 60,10 Q90,10 90,30 Z" fill="white"/>
+              </svg>
+              <svg class="absolute top-16 right-20 opacity-40" width="120" viewBox="0 0 100 40">
+                <path d="M10,30 Q10,10 30,10 Q40,0 60,10 Q90,10 90,30 Z" fill="white"/>
+              </svg>
+            </div>
+            <img src="./assets/b-1.svg" alt="" class="building b-1">
+            <img src="./assets/b-2.svg" alt="" class="building b-2">
+            <img src="./assets/b-3.svg" alt="" class="building b-3">
+            <img src="./assets/b-4.svg" alt="" class="building b-4">
+            <img src="./assets/b-5.svg" alt="" class="building b-5">
+            <img src="./assets/b-6.svg" alt="" class="building b-6">
+          </div>
+        </div>
+
+        <!-- Family reference card -->
+        <div class="info-card">
+          <h4 class="info-card-title">屬性家族 / FAMILY</h4>
+          <ul class="family-list">
+            <li><code>display: flex</code><span>水平／垂直排列</span></li>
+            <li><code>display: grid</code><span>二維格線排列</span></li>
+            <li><code>display: block</code><span>獨佔一整行</span></li>
+            <li><code>display: inline-block</code><span>可並排的小區塊（可設寬高）</span></li>
+          </ul>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════ EMMET DROPDOWN ════════════════════════════════════════ -->
+  <div id="emmet-drop">
+    <div class="e-head">
+      <span>EMMET 縮寫</span>
+      <span>Tab ↹ 展開</span>
+    </div>
+    <div id="emmet-list"></div>
+    <div class="e-hint">↑↓ 選擇　Tab 展開　Esc 關閉</div>
+  </div>
+
+  <!-- ════════════════════════════════════════ MODAL ════════════════════════════════════════ -->
+  <div id="modal-overlay" class="modal-overlay">
+    <div class="modal-card">
+
+      <div class="modal-seal">
+        <div class="modal-seal-text">PASS</div>
+      </div>
+
+      <div class="modal-title">城市甦醒！</div>
+      <div class="modal-prop">display: flex;</div>
+      <div class="modal-desc">加上 display: flex，子元素立刻並排排列，街道從沉睡狀態被喚醒。</div>
+      <div class="modal-stars" id="modal-stars">★★★</div>
+
+      <div style="display:flex; gap:10px; justify-content:center;">
+        <button id="modal-close-btn"
+          style="border:1.5px solid #0e0c09; background:transparent; padding:10px 20px;
+                 font-family:'Noto Sans TC',sans-serif; font-weight:700; font-size:.82rem;
+                 cursor:pointer; letter-spacing:.04em;">
+          繼續欣賞
+        </button>
+        <button id="modal-next-btn" class="btn-next-level" onclick="window.location.href='../level-02/index.html'">
+          下一關 →
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <style id="dynamic-styles"></style>
+  <script src="./js/game.js"></script>
+</body>
+</html>

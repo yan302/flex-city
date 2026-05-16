@@ -1,0 +1,596 @@
+/* ============================================================
+   Skyline Architect — Level 02 / Vertical Stack
+   level-02/css/style.css
+   ============================================================ */
+
+/* ── VARIABLES ──────────────────────────────── */
+:root {
+  --paper:       #fefdfb;
+  --ink:         #0e0c09;
+  --beams-red:   #e60012;
+  --beams-yellow:#facc15;
+  --beams-green: #22c55e;
+  --beams-blue:  #3b82f6;
+  --sky-blue:    #bae6fd;
+  --rule:        #c8c2b8;
+  --dim:         #8a8278;
+}
+
+/* ── BASE ───────────────────────────────────── */
+body {
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: 'Noto Sans TC', sans-serif;
+  overflow-x: hidden;
+  background-image:
+    linear-gradient(rgba(254, 253, 251, 0.55), rgba(254, 253, 251, 0.55)),
+    url('https://www.transparenttextures.com/patterns/felt.png');
+  transition: background-color 1s ease;
+}
+
+/* ── PROGRESS HINT BANNER ───────────────────── */
+.progress-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #fef3c7;
+  border: 2px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  padding: 14px 18px;
+  font-size: .82rem;
+  font-weight: 700;
+  line-height: 1.7;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity .25s, transform .25s;
+  pointer-events: none;
+}
+.progress-hint.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+.ph-icon {
+  background: var(--beams-red);
+  color: white;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .85rem;
+  font-weight: 900;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.ph-text {
+  flex: 1;
+}
+
+/* ── INFO CARD (family reference) ───────────── */
+.info-card {
+  background: #fff;
+  border: 2px solid var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
+  padding: 18px 20px;
+}
+.info-card-title {
+  font-family: 'Space Mono', monospace;
+  font-weight: 900;
+  font-size: .68rem;
+  color: var(--ink);
+  text-transform: uppercase;
+  letter-spacing: .15em;
+  margin-bottom: 12px;
+}
+.family-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.family-list li {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  font-size: .8rem;
+  line-height: 1.55;
+  flex-wrap: wrap;
+}
+.family-list code {
+  font-family: 'Space Mono', monospace;
+  background: rgba(14, 12, 9, 0.07);
+  padding: 3px 8px;
+  border-radius: 2px;
+  font-size: .74rem;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.family-list span {
+  font-weight: 600;
+  color: #3a3530;
+}
+
+/* ── TOWER FRAME (narrow foundation) ────────── */
+.tower-frame {
+  border: 2px solid var(--ink);
+  position: relative;
+  overflow: hidden;
+  transition: background-color 0.8s ease;
+  height: 460px;
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
+#target-city.tower-frame {
+  height: 380px;
+  background-color: rgba(255, 255, 255, 0.6);
+}
+
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(14,12,9,.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(14,12,9,.06) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.is-success #live-city {
+  background-color: var(--sky-blue);
+  background-image: none;
+  box-shadow: inset 0 30px 60px rgba(255,255,255,.4);
+}
+
+/* ── FOUNDATION (narrow base) ───────────────── */
+.tower-foundation {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 18px;
+  background: #9b9b99;
+  z-index: 1;
+}
+
+.tower-foundation::before {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: -28px;
+  right: -28px;
+  height: 8px;
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--ink) 0 6px,
+    transparent 6px 12px
+  );
+  opacity: .35;
+}
+
+/* ── CLOUDS ─────────────────────────────────── */
+.clouds {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  opacity: 0; transition: opacity 1s ease; z-index: 5;
+}
+.is-success .clouds { opacity: 1; }
+
+/* ── TOWER STACK CONTAINER ──────────────────── */
+.tower-stack {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 180px;
+  height: calc(100% - 18px);
+
+  /* Default: NO flex — let img drop side-by-side via inline-block fallback */
+  /* (live-city overrides with display:flex via preset) */
+  z-index: 4;
+  padding: 6px 0 0;
+  box-sizing: border-box;
+}
+
+/* TARGET city: pre-built correctly (column stack at bottom) */
+#target-city .tower-stack {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: stretch;
+}
+
+/* LIVE city: starts as flex row (scattered horizontally) — wraps to 2 rows if needed */
+#live-city .tower-stack {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  align-content: flex-end;
+  /* Width expanded so the row can spread horizontally across the whole frame */
+  width: 100%;
+  left: 0;
+  transform: none;
+  padding: 0 12px 24px;
+  column-gap: 10px;
+  row-gap: 24px;
+  justify-content: center;
+}
+
+/* ── FLOOR CARD (label + image wrapper) ─────── */
+.floor-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  position: relative;
+  transition: transform 0.5s cubic-bezier(.34,1.4,.64,1);
+}
+
+/* ── SPEECH BUBBLE LABEL ────────────────────── */
+.floor-label {
+  position: relative;
+  background: #fff;
+  border: 2px solid var(--ink);
+  border-radius: 14px;
+  padding: 4px 14px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.12);
+  z-index: 11;
+  letter-spacing: .05em;
+}
+.floor-label::before,
+.floor-label::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  border-style: solid;
+}
+.floor-label::before {
+  bottom: -10px;
+  border-width: 10px 7px 0 7px;
+  border-color: var(--ink) transparent transparent transparent;
+  z-index: 1;
+}
+.floor-label::after {
+  bottom: -6px;
+  border-width: 7px 5px 0 5px;
+  border-color: #fff transparent transparent transparent;
+  z-index: 2;
+}
+
+/* ── FLOOR (each building image) ────────────── */
+.floor {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+  -webkit-user-drag: none;
+  transition: filter 0.4s ease, opacity 0.4s ease;
+}
+
+/* Horizontal (scattered) mode: 3 cards per row (force via flex-basis), with tilt */
+#live-city .tower-stack .floor-card {
+  flex: 0 0 calc(33.333% - 14px);
+  max-width: 110px;
+  filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.15));
+}
+#live-city .tower-stack .floor-card .floor {
+  width: 96px;     /* image stays at 1.5× = 96px */
+}
+
+#live-city .tower-stack .floor-card:nth-child(1) { transform: rotate(-4deg) translateY(-2px); }
+#live-city .tower-stack .floor-card:nth-child(2) { transform: rotate(3deg)  translateY(4px); }
+#live-city .tower-stack .floor-card:nth-child(3) { transform: rotate(-2deg); }
+#live-city .tower-stack .floor-card:nth-child(4) { transform: rotate(5deg)  translateY(2px); }
+#live-city .tower-stack .floor-card:nth-child(5) { transform: rotate(-3deg) translateY(-4px); }
+
+/* When stacked (half = column, success = column-reverse) — shared layout */
+.is-half #live-city .tower-stack,
+.is-success #live-city .tower-stack {
+  flex-wrap: nowrap;
+  width: 130px;          /* 縮成圖片寬度，讓左右牆壁對齊 */
+  max-width: 130px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 0 0;
+  row-gap: 0;            /* 樓層之間沒有間距 */
+  column-gap: 0;
+  align-items: stretch;
+  filter: drop-shadow(3px 4px 0 rgba(0, 0, 0, 0.3));  /* 整棟塔一張陰影 */
+}
+
+/* Half-state: column direction → main axis 由上至下，flex-end = 底部（地基） */
+.is-half #live-city .tower-stack {
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+/* Success: column-reverse → main axis 由下至上，所以「貼地」要用 flex-start */
+.is-success #live-city .tower-stack {
+  flex-direction: column-reverse;
+  justify-content: flex-start;
+}
+
+/* 每層卡片：純 block，沒有 overflow（讓右側 label 不被裁掉） */
+.is-half #live-city .tower-stack .floor-card,
+.is-success #live-city .tower-stack .floor-card {
+  display: block !important;
+  position: relative !important;
+  width: 130px !important;
+  max-width: 130px !important;
+  /* ▼ 關鍵：清掉初始狀態繼承下來的 flex-basis 33.333%——
+     在 column 方向，那 33.333% 會被解讀成「高度的 1/3」，
+     導致每張卡硬撐成 130px 高，產生大量空白縫。           */
+  flex: 0 0 auto !important;
+  height: auto !important;
+  overflow: visible !important;       /* 不裁切 label */
+  gap: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  transform: none !important;
+  filter: none !important;
+}
+
+/* 圖片：自然尺寸直接堆疊，不裁切、不疊壓
+   ── 每張 SVG 本身就含完整一層樓的牆壁與樓板，
+   ── 堆在一起就會自然出現樓層之間的水泥分隔線。  */
+.is-half #live-city .tower-stack .floor-card .floor,
+.is-success #live-city .tower-stack .floor-card .floor {
+  width: 130px !important;
+  height: auto !important;            /* 自然尺寸（不變形）*/
+  display: block !important;
+  position: static !important;
+  margin: 0 !important;
+  max-width: 130px !important;
+  clip-path: none !important;
+}
+
+/* Label: 從上方下指（散落狀態） → 浮到大樓右側（堆疊狀態）*/
+.is-half #live-city .tower-stack .floor-label,
+.is-success #live-city .tower-stack .floor-label {
+  position: absolute;
+  left: calc(100% + 16px);   /* 圖片右緣外 16px，留 tail 空間 */
+  top: 50%;
+  transform: translateY(-50%);
+  flex-shrink: 0;
+  margin: 0;
+}
+
+/* Tail 從下指轉向左指（指向左邊的建築物） */
+.is-half #live-city .tower-stack .floor-label::before,
+.is-success #live-city .tower-stack .floor-label::before {
+  bottom: auto;
+  top: 50%;
+  left: -10px;
+  transform: translateY(-50%);
+  border-width: 7px 10px 7px 0;
+  border-color: transparent var(--ink) transparent transparent;
+}
+.is-half #live-city .tower-stack .floor-label::after,
+.is-success #live-city .tower-stack .floor-label::after {
+  bottom: auto;
+  top: 50%;
+  left: -6px;
+  transform: translateY(-50%);
+  border-width: 5px 7px 5px 0;
+  border-color: transparent #fff transparent transparent;
+}
+
+/* ── LABEL LINE ─────────────────────────────── */
+.label-line {
+  text-transform: uppercase; font-weight: 900;
+  letter-spacing: .15em; display: flex;
+  align-items: center; gap: 12px;
+  margin-bottom: 8px; font-size: .72rem;
+}
+.label-line::after {
+  content: ""; flex-grow: 1;
+  height: 1.5px; background-color: var(--ink);
+}
+
+/* ── EDITOR BOX ─────────────────────────────── */
+.editor-container {
+  background: #fff;
+  border: 3px solid var(--ink);
+  box-shadow: 6px 6px 0 var(--ink);
+  position: relative;
+}
+
+textarea {
+  font-family: 'Space Mono', monospace;
+  background: transparent; resize: none; outline: none;
+  width: 100%; line-height: 1.6; font-size: 1.05rem;
+}
+
+/* ── PASSED STAMP ───────────────────────────── */
+#pass-stamp {
+  position: absolute;
+  top: 62%; left: 65%;
+  transform: translate(-50%,-50%) rotate(-12deg) scale(0);
+  opacity: 0; pointer-events: none;
+  transition: transform .4s cubic-bezier(.175,.885,.32,1.275), opacity .2s ease;
+  z-index: 20;
+  color: var(--beams-red);
+  border: 6px solid var(--beams-red);
+  border-radius: 5px; padding: 5px 17px;
+  font-weight: 900; font-size: 2rem;
+  letter-spacing: .1em;
+  background: rgba(255,255,255,.95);
+  white-space: nowrap; user-select: none;
+}
+#pass-stamp.active {
+  transform: translate(-50%,-50%) rotate(-12deg) scale(1);
+  opacity: 1;
+}
+
+/* ── EMMET DROPDOWN ─────────────────────────── */
+#emmet-drop {
+  position: fixed; display: none;
+  background: var(--paper);
+  border: 1.5px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  z-index: 900; overflow: hidden;
+  min-width: 320px; max-height: 220px; overflow-y: auto;
+}
+
+.e-head {
+  padding: 4px 12px;
+  border-bottom: 1px solid var(--rule);
+  font-family: 'Space Mono', monospace;
+  font-size: .58rem; color: var(--dim);
+  letter-spacing: .1em; text-transform: uppercase;
+  display: flex; justify-content: space-between;
+}
+
+.e-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 14px; cursor: pointer;
+  border-bottom: 1px solid var(--rule);
+  font-family: 'Space Mono', monospace;
+  font-size: .74rem; line-height: 1.5;
+  transition: background .08s;
+}
+.e-item:last-child { border-bottom: none; }
+.e-item.sel, .e-item:hover { background: var(--ink); color: var(--paper); }
+
+.e-abbr { min-width: 52px; font-weight: 700; letter-spacing: .02em; }
+.e-typed { text-decoration: underline; text-underline-offset: 3px; font-weight: 900; }
+.e-rest  { opacity: .45; }
+.e-item.sel .e-rest, .e-item:hover .e-rest { opacity: .6; }
+.e-arr   { flex-shrink: 0; font-size: .62rem; opacity: .4; }
+.e-val   { color: var(--dim); flex: 1; }
+.e-item.sel .e-val, .e-item:hover .e-val { color: rgba(249,246,240,.75); }
+
+.e-hint {
+  padding: 3px 12px;
+  font-family: 'Space Mono', monospace;
+  font-size: .58rem; color: var(--dim);
+  letter-spacing: .04em;
+  border-top: 1px solid var(--rule);
+  background: #ece6db;
+}
+
+/* ── MODAL ──────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(249,246,240,.88);
+  backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity .25s;
+}
+.modal-overlay.on { opacity: 1; pointer-events: all; }
+
+.modal-card {
+  background: #fff;
+  border: 2px solid var(--ink);
+  box-shadow: 8px 8px 0 var(--ink);
+  padding: 36px 44px;
+  text-align: center;
+  max-width: 360px; width: 90%;
+  transform: translateY(16px) scale(.95);
+  transition: transform .35s cubic-bezier(.34,1.4,.64,1);
+}
+.modal-overlay.on .modal-card { transform: translateY(0) scale(1); }
+
+.modal-seal {
+  width: 80px; height: 80px;
+  border: 3px solid var(--beams-red);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 18px; position: relative;
+  transform: rotate(-14deg);
+}
+.modal-overlay.on .modal-seal {
+  animation: stampIn .4s cubic-bezier(.34,1.4,.64,1) both;
+}
+@keyframes stampIn {
+  from { transform: rotate(-25deg) scale(1.6); opacity: 0; }
+  to   { transform: rotate(-14deg) scale(1);   opacity: 1; }
+}
+.modal-seal::before {
+  content: ''; position: absolute; inset: 5px;
+  border: 1px solid var(--beams-red); border-radius: 50%;
+}
+.modal-seal-text {
+  color: var(--beams-red);
+  font-size: .65rem; font-weight: 900;
+  letter-spacing: .06em; line-height: 1.3; text-align: center;
+}
+
+.modal-title {
+  font-size: 1.15rem; font-weight: 900;
+  margin-bottom: 6px; letter-spacing: -.01em;
+}
+.modal-prop {
+  font-family: 'Space Mono', monospace;
+  font-size: .72rem;
+  background: rgba(14,12,9,.05);
+  border: 1px solid var(--rule);
+  padding: 4px 14px; display: inline-block;
+  margin-bottom: 8px; white-space: pre;
+}
+.modal-desc {
+  font-size: .78rem; color: var(--dim);
+  line-height: 1.55; margin-bottom: 20px;
+}
+.modal-stars { font-size: 1.3rem; letter-spacing: 4px; margin-bottom: 22px; }
+
+.btn-next-level {
+  background: var(--ink); color: var(--paper);
+  border: none; cursor: pointer;
+  padding: 11px 32px;
+  font-family: 'Noto Sans TC', sans-serif;
+  font-weight: 900; font-size: .9rem;
+  letter-spacing: .04em;
+  transition: background .15s;
+}
+.btn-next-level:hover { background: #2a2620; }
+
+/* ── INLINE NEXT-LEVEL BUTTON (page-level, beside RESET) ─── */
+/* 平常隱藏，過關後 (body.is-success) 才出現                  */
+.next-inline-btn {
+  background: var(--ink);
+  color: var(--paper);
+  border: 2px solid var(--ink);
+  cursor: pointer;
+  padding: 7px 18px;
+  font-family: 'Noto Sans TC', sans-serif;
+  font-weight: 900;
+  font-size: .75rem;
+  letter-spacing: .08em;
+  box-shadow: 4px 4px 0 #9b9b99;
+  /* hidden state */
+  opacity: 0;
+  transform: translateY(4px) scale(.96);
+  pointer-events: none;
+  transition: opacity .35s ease, transform .35s cubic-bezier(.34,1.4,.64,1),
+              box-shadow .15s, background .15s;
+}
+.next-inline-btn span {
+  display: inline-block;
+  transition: transform .25s ease;
+}
+.is-success .next-inline-btn {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+  animation: nextBtnPulse 1.8s ease 1.2s 2;   /* 通關後輕輕脈動兩下吸引注意 */
+}
+.next-inline-btn:hover { background: #2a2620; }
+.next-inline-btn:hover span { transform: translateX(4px); }
+.next-inline-btn:active {
+  box-shadow: none;
+  transform: translate(4px, 4px);
+}
+
+@keyframes nextBtnPulse {
+  0%, 100% { box-shadow: 4px 4px 0 #9b9b99; }
+  50%      { box-shadow: 6px 6px 0 #7a7a78; }
+}

@@ -1,6 +1,7 @@
 # 🏙️ Flex City
 
-> 一個互動式 Flexbox 學習遊戲——用 5 個情境關卡，把 CSS Flexbox 的核心概念透過視覺敘事學會。
+> 一個以城市生活為主題的互動式 Flexbox 學習遊戲。
+> 透過 5 個情境關卡，將抽象的 CSS 排版概念轉化成直覺的空間操作。
 
 ## 🎮 五大關卡
 
@@ -15,22 +16,43 @@
 ## ✨ 特色
 
 - 🎯 **即時預覽**：每打一個字，畫面立刻反應
-- 💡 **半正解提示**：寫到一半時的引導訊息
+- 💡 **漸進式提示系統**：不是直接公布答案，而是在玩家逐步接近正解時提供方向引導
 - ⌨️ **Emmet 縮寫支援**：`df` → `display: flex;`、`fdc` → `flex-direction: column;`...
 - 🎬 **過關動畫序列**：印章 → 動畫 → modal，2.5–6.5s 不等的節奏
 - 🎊 **最終關撒花**：通關 + 完成挑戰雙重慶祝
 - 📱 **視窗大小自適應**：Flex 排版在不同寬度下也不會壞
 
+## 🌃 為什麼是城市？
+
+Flexbox 本質上是在處理「空間中的排列與關係」。
+
+因此，我選擇用「城市生活」作為隱喻。
+
+街道、建築、咖啡廳、夜市與星空，不只是生活中的風景，
+也能自然對應 Flexbox 的排列、對齊、留白與方向。
+
+只要稍微留心，生活中的每個角落，
+都可能是一場正在發生的 Flexbox 練習。
+
 ## 🧠 設計思考
 
-每關都不是「翻譯題」，而是**「為什麼這樣寫」**的情境：
-- `flex-direction: column-reverse` 配 `justify-content: flex-start`——理解軸的方向 vs 畫面的方向
-- `space-around` vs `space-evenly`——兩個都接受，因為「剛剛好的距離」可以有兩種理解
-- `space-between` 不接受——首尾元素貼牆，違反「剛剛好」的精神
+每一關都不是單純的語法翻譯，而是將 Flexbox 的抽象概念轉化成空間問題。
+
+例如：
+
+- **`flex-direction: column-reverse`**
+  玩家會看到「建築樓層的對調」，藉此理解軸線反轉。
+
+- **`space-around` vs `space-evenly`**
+  兩者都能成立，因為「剛剛好的距離」本身就存在不同理解。
+
+- **`space-between`**
+  不被接受，因為首尾元素貼牆，破壞了空間舒適感。
 
 ## 🛠️ 技術
 
-- 純 HTML/CSS/JS——零建置依賴
+Vanilla HTML / CSS / JavaScript（無框架、零建置）
+
 - [Tailwind CSS](https://tailwindcss.com/) CDN 版做 UI 排版
 - [canvas-confetti](https://github.com/catdad/canvas-confetti) 做撒花效果
 - 字體：Noto Sans TC + Space Mono

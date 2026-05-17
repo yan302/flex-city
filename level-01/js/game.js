@@ -85,7 +85,7 @@ function doSuccess() {
       glow:     'rgba(251,146,60,.75)',
       palette:  ['#f97316', '#fbbf24', '#22c55e', '#3b82f6', '#ec4899'],
     });
-  }, 2800);
+  }, 2500);
 
   setTimeout(() => {
     if (hasSuccess) FlexCity.showModal(hintUsed ? 2 : 3);

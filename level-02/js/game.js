@@ -76,7 +76,7 @@ function doSuccess() {
   stamp.classList.add('active');
   editor.classList.add('text-green-700', 'font-bold');
 
-  // 🎉 任天堂式過關大字（蓋章後 0.5s 彈出）
+  // 🎉 任天堂式過關大字（蓋章後 1.5s 彈出）
   setTimeout(() => {
     FlexCity.celebrate({
       title:    '大樓落成',
@@ -86,13 +86,13 @@ function doSuccess() {
       glow:     'rgba(59,130,246,.75)',
       palette:  ['#3b82f6', '#22c55e', '#facc15', '#ec4899', '#f97316'],
     });
-  }, 500);
+  }, 1500);
 
-  // 大字消失（2.3s）後 ~0.3s 接 modal — 視覺零空檔
+  // 大字 1.5s 出，等顯示完 + 淡出完（共 2.3s）+ 0.2s 緩衝 = 4.0s 接 modal
   const stars = hintUsed ? 2 : 3;
   setTimeout(() => {
     if (hasSuccess) FlexCity.showModal(stars);
-  }, 2600);
+  }, 4000);
 }
 
 /* ── RESET ──────────────────────────────────── */

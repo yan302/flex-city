@@ -103,13 +103,13 @@ function doSuccess() {
 
   // Stage 3: lighting effects + PASSED stamp
   const STAMP_AT  = 1500;
-  const MODAL_GAP = 2400;   // 印章後 2.4s 彈 modal — 大字 3.6s 消失後 ~0.3s 接上
+  const MODAL_GAP = 3500;   // 印章後 3.5s 彈 modal — 大字 2.5s 出現 → 4.8s DOM 消失 → 5.0s modal
   setTimeout(() => {
     gameBody.classList.add('is-success');
     stamp.classList.add('active');
   }, STAMP_AT);
 
-  // 🎉 任天堂式過關大字（蓋章後 0.3s 彈出）
+  // 🎉 任天堂式過關大字（蓋章後 1s 彈出 → doSuccess 2.5s）
   setTimeout(() => {
     FlexCity.celebrate({
       title:    '萬頭攢動',
@@ -119,7 +119,7 @@ function doSuccess() {
       glow:     'rgba(250,204,21,.85)',
       palette:  ['#facc15', '#ec4899', '#22c55e', '#3b82f6', '#f97316', '#a855f7'],
     });
-  }, STAMP_AT + 300);
+  }, STAMP_AT + 1000);
 
   // Stage 4: modal (印章後再等 3s = 總共 4.5s)
   // 存下 timer id，方便「完成挑戰」按鈕在 modal 還沒 fire 前能取消它

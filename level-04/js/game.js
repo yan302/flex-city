@@ -85,7 +85,7 @@ function doSuccess() {
   stamp.classList.add('active');
   editor.classList.add('text-indigo-700', 'font-bold');
 
-  // 🎉 任天堂式過關大字（蓋章後 0.5s 彈出）
+  // 🎉 任天堂式過關大字（等星座連線跑完 ~2.9s + 1.5s = 4.4s 彈出）
   setTimeout(() => {
     FlexCity.celebrate({
       title:    '星座解密',
@@ -95,10 +95,10 @@ function doSuccess() {
       glow:     'rgba(167,139,250,.8)',
       palette:  ['#a78bfa', '#facc15', '#3b82f6', '#ec4899', '#22c55e'],
     });
-  }, 500);
+  }, 4400);
 
-  // 大字消失（2.3s）後 ~0.3s 接 modal — 視覺零空檔
-  setTimeout(() => FlexCity.showModal(hintUsed ? 2 : 3), 2600);
+  // 大字 4.4s 出，等顯示完 + 淡出完（共 2.3s）+ 0.2s 緩衝 = 6.9s 接 modal
+  setTimeout(() => FlexCity.showModal(hintUsed ? 2 : 3), 6900);
 }
 
 /* ── RESET ──────────────────────────────────── */

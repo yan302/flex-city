@@ -109,7 +109,14 @@ window.FlexCity = (function () {
     }
 
     if (e.key === 'Escape') { hideDrop(); return; }
-    if (e.key === 'Enter' && suggestions.length) { hideDrop(); }
+
+    /* Enter：跟 Tab 一樣可以套用補全（建議下拉有出現時才攔截，
+       避免在純文字編輯時影響正常換行行為） */
+    if (e.key === 'Enter' && suggestions.length) {
+      e.preventDefault();
+      applyIdx(selIdx);
+      return;
+    }
   }
 
   /* ── 初始化 Emmet 引擎 ──────────────────── */
@@ -186,20 +193,16 @@ window.FlexCity = (function () {
     const style = document.createElement('style');
     style.id = 'fc-celebrate-styles';
     style.textContent = `
-      /* 持續遮罩：跟 banner 同時淡入，但「不會」隨 banner 消失──
-         會一直停留到 modal 關閉時，由 closeModal() 統一清掉。
-         好處：銀幕從「大字進場」→ 短暫「霧化的城市」→「modal 卡片進場」
-              整段都是同一片紙色霧化，視覺完全連續、零空檔。
-
-         z-index 195：必須低於 modal-overlay (200)，否則會蓋住 modal
-         讓 modal 完全點不到。banner 仍在 998，confetti 在 999，
-         celebrate 階段三者仍正確分層。 */
+      /* 持續遮罩：跟 banner 同時淡入，停留到 modal 關閉時才清掉。
+         顏色與所有關卡 modal-overlay 同（深夜色 + 6px blur），
+         所以從「大字進場」→「modal 進場」整段視覺完全連續、零跳色。
+         z-index 195：必須低於 modal-overlay (200)，否則會蓋住 modal。 */
       .fc-celebrate-backdrop {
         position: fixed;
         inset: 0;
         z-index: 195;
-        background: rgba(249, 246, 240, 0.88);
-        backdrop-filter: blur(4px);
+        background: rgba(15, 23, 42, 0.78);
+        backdrop-filter: blur(6px);
         opacity: 0;
         pointer-events: none;
         transition: opacity .4s ease;
@@ -338,6 +341,45 @@ window.FlexCity = (function () {
       setTimeout(() => banner.remove(), 500);
     }, duration);
   }
+
+  /* ============================================================
+     全域樣式注入（每關共用）
+     - nav 上的 F 標誌 hover 時，右側浮現「← 回首頁」字樣
+     ============================================================ */
+  function injectGlobalStyles() {
+    if (document.getElementById('fc-global-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'fc-global-styles';
+    style.textContent = `
+      /* F 標誌上方浮字：偵測「指向 ../index.html」的 nav 連結即套用 */
+      nav a[href="../index.html"] {
+        position: relative;
+      }
+      nav a[href="../index.html"]::after {
+        content: "← 回首頁";
+        position: absolute;
+        bottom: calc(100% + 8px);   /* 圈圈上方 8px */
+        left: 50%;
+        transform: translateX(-50%) translateY(4px);
+        font-family: 'Noto Sans TC', sans-serif;
+        font-size: .78rem;
+        font-weight: 700;
+        letter-spacing: .04em;
+        white-space: nowrap;
+        color: var(--ink, #0e0c09);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .25s ease,
+                    transform .25s cubic-bezier(.34, 1.4, .64, 1);
+      }
+      nav a[href="../index.html"]:hover::after {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    `;
+    document.head.appendChild(style);
+  }
+  injectGlobalStyles();
 
   return {
     initEmmet,

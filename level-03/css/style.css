@@ -501,8 +501,8 @@ textarea {
 /* ── MODAL ──────────────────────────────────── */
 .modal-overlay {
   position: fixed; inset: 0; z-index: 200;
-  background: rgba(249,246,240,.88);
-  backdrop-filter: blur(4px);
+  background: rgba(15, 23, 42, 0.78);
+  backdrop-filter: blur(6px);
   display: flex; align-items: center; justify-content: center;
   opacity: 0; pointer-events: none;
   transition: opacity .25s;

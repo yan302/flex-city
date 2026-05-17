@@ -114,9 +114,10 @@ function updateAngryCats(clean, hasJC, hasBetween) {
   }
 
   if (hasBetween) {
-    // 頭尾貼牆 → 只生氣、不講話
+    // 頭尾貼牆 → 頭尾 💢；第 6 隻講話「貼太近了啦！」
     setAngry(slots[0]);
-    setAngry(slots[slots.length - 1]);
+    setAngry(slots[5]);
+    setBubble(slots[5], '貼太近了啦！');
     return;
   }
 
@@ -127,10 +128,11 @@ function updateAngryCats(clean, hasJC, hasBetween) {
     clean.includes('justify-content:flex-end');
 
   if (hasCenterOrEdges) {
-    // 全部擠成一團 → 每隻都生氣
+    // 全部擠成一團 → 每隻都生氣；第 3 隻講話「貼太近了啦！」
     slots.forEach(s => setAngry(s));
+    setBubble(slots[2], '貼太近了啦！');
   } else {
-    // 完全沒輸入 / 不相關輸入 → 只第 2, 3, 6 隻不舒服
+    // 完全沒輸入 / 不相關輸入 → 只第 2, 3, 6 隻不舒服（無對話框）
     [1, 2, 5].forEach(i => setAngry(slots[i]));
   }
 }
@@ -185,7 +187,7 @@ function doSuccess() {
   stamp.classList.add('active');
   editor.classList.add('text-green-700', 'font-bold');
 
-  // 🎉 任天堂式過關大字（蓋章後 0.5s 彈出）
+  // 🎉 任天堂式過關大字（蓋章後 1.5s 彈出）
   setTimeout(() => {
     FlexCity.celebrate({
       title:    '咖啡廳開幕',
@@ -195,13 +197,13 @@ function doSuccess() {
       glow:     'rgba(236,72,153,.75)',
       palette:  ['#ec4899', '#facc15', '#22c55e', '#a855f7', '#f97316'],
     });
-  }, 500);
+  }, 1500);
 
-  // 延遲 5.5 秒——這關屬性家族多（5+5），多給時間讀，但比之前 6.5s 收緊
+  // 大字 1.5s 出，等顯示完 + 淡出完（共 2.3s）+ 0.2s 緩衝 = 4.0s 接 modal
   const stars = hintUsed ? 2 : 3;
   setTimeout(() => {
     if (hasSuccess) FlexCity.showModal(stars, { onShow: applyModalCopy });
-  }, 5500);
+  }, 4000);
 }
 
 /* modal 彈出時依使用者實際採用的 justify-content 值改寫描述 */

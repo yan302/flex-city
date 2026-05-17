@@ -1,6 +1,7 @@
 /* ============================================================
-   Skyline Architect — Level 06 / Night Market Expansion
-   level-06/js/game.js
+   Flex City — Level 05 / Night Market Expansion
+   level-05/js/game.js
+   共用引擎：shared/flex-city.js
    ============================================================ */
 
 const editor    = document.getElementById('css-editor');
@@ -32,75 +33,9 @@ const EMMET = {
   'fdc'    : 'flex-direction: column;',
 };
 
-let selIdx              = 0;
-let suggestions         = [];
-let hasSuccess          = false;
-let hintUsed            = false;
-let pendingModalTimer   = null;   // doSuccess 排程的 PASS modal setTimeout id
-
-/* ── EMMET ─────────────────────────────────── */
-function getWordBefore() {
-  const pos    = editor.selectionStart;
-  const before = editor.value.substring(0, pos);
-  const m      = before.match(/([a-z0-9]+)$/);
-  return m ? { word: m[1], start: pos - m[1].length } : { word: '', start: pos };
-}
-
-function updateSuggestions() {
-  const { word } = getWordBefore();
-  if (!word) { hideDrop(); return; }
-  suggestions = Object.entries(EMMET)
-    .filter(([a]) => a.startsWith(word))
-    .sort((a, b) => a[0].length - b[0].length);
-  selIdx = 0;
-  suggestions.length ? renderDrop(word) : hideDrop();
-}
-
-function renderDrop(typed) {
-  const list = document.getElementById('emmet-list');
-  list.innerHTML = suggestions.map(([abbr, val], i) => {
-    const t = '<span class="e-typed">' + abbr.slice(0, typed.length) + '</span>';
-    const r = abbr.length > typed.length
-      ? '<span class="e-rest">' + abbr.slice(typed.length) + '</span>'
-      : '';
-    return '<div class="e-item' + (i === selIdx ? ' sel' : '') + '"'
-      + ' onmousedown="applyIdx(' + i + ')">'
-      + '<span class="e-abbr">' + t + r + '</span>'
-      + '<span class="e-arr">→</span>'
-      + '<span class="e-val">' + val + '</span>'
-      + '</div>';
-  }).join('');
-  positionDrop();
-  document.getElementById('emmet-drop').style.display = 'block';
-}
-
-function positionDrop() {
-  const drop = document.getElementById('emmet-drop');
-  const r    = editor.getBoundingClientRect();
-  drop.style.left   = r.left + 'px';
-  drop.style.width  = Math.max(r.width, 320) + 'px';
-  drop.style.bottom = (window.innerHeight - r.top + 2) + 'px';
-  drop.style.top    = 'auto';
-}
-
-function hideDrop() {
-  document.getElementById('emmet-drop').style.display = 'none';
-  suggestions = [];
-  selIdx = 0;
-}
-
-function applyIdx(i) {
-  if (i === undefined) i = selIdx;
-  if (!suggestions[i]) return;
-  const [, val]  = suggestions[i];
-  const { start } = getWordBefore();
-  const end       = editor.selectionStart;
-  editor.value    = editor.value.substring(0, start) + val + editor.value.substring(end);
-  editor.setSelectionRange(start + val.length, start + val.length);
-  hideDrop();
-  updateStyles();
-  editor.focus();
-}
+let hasSuccess        = false;
+let hintUsed          = false;
+let pendingModalTimer = null;   // doSuccess 排程的 PASS modal setTimeout id
 
 /* ── LIVE PREVIEW + ANSWER CHECK ────────────── */
 function updateStyles() {
@@ -118,7 +53,7 @@ function checkAnswer() {
 
   const hasWrap = /flex-wrap:wrap/.test(clean);
 
-  // row-gap:160px ✓  |  gap:160px ✓  |  column-gap:160px ✗
+  // row-gap:240px ✓  |  gap:240px ✓  |  column-gap:240px ✗
   const gapStr = `${TARGET_GAP_PX}px`;
   const hasRowGap = clean.includes(`row-gap:${gapStr}`);
   const shortGapPattern = new RegExp(`(^|[^a-z-])gap:${TARGET_GAP_PX}px`);
@@ -149,7 +84,7 @@ function hideHint() {
    Stage 1: gap expands → booths drift down (CSS transition handles this)
    Stage 2: +700ms → flip bottom row 180°
    Stage 3: +1500ms → lighting effects + PASSED stamp
-   Stage 4: +2800ms → modal popup
+   Stage 4: +3500ms → modal popup
    ────────────────────────────────────────────── */
 function doSuccess() {
   hasSuccess = true;
@@ -168,36 +103,31 @@ function doSuccess() {
 
   // Stage 3: lighting effects + PASSED stamp
   const STAMP_AT  = 1500;
-  const MODAL_GAP = 2000;   // 印章出現後再等 2s 才彈 modal (印章 1.5s + 2s = 3.5s 總)
+  const MODAL_GAP = 2400;   // 印章後 2.4s 彈 modal — 大字 3.6s 消失後 ~0.3s 接上
   setTimeout(() => {
     gameBody.classList.add('is-success');
     stamp.classList.add('active');
   }, STAMP_AT);
 
-  // Stage 4: modal (印章後再等 2s = 總共 3.5s)
+  // 🎉 任天堂式過關大字（蓋章後 0.3s 彈出）
+  setTimeout(() => {
+    FlexCity.celebrate({
+      title:    '萬頭攢動',
+      titleSvg: '../shared/titles/title-05.svg',
+      subtitle: 'FINAL LEVEL CLEAR',
+      accent:   '#facc15',                       // 夜市霓虹黃
+      glow:     'rgba(250,204,21,.85)',
+      palette:  ['#facc15', '#ec4899', '#22c55e', '#3b82f6', '#f97316', '#a855f7'],
+    });
+  }, STAMP_AT + 300);
+
+  // Stage 4: modal (印章後再等 3s = 總共 4.5s)
   // 存下 timer id，方便「完成挑戰」按鈕在 modal 還沒 fire 前能取消它
+  // (移除 onShow 的 fireConfetti('pass')，因為大字慶祝已經有粒子了)
   pendingModalTimer = setTimeout(() => {
     pendingModalTimer = null;
-    showModal(hintUsed ? 2 : 3);
+    FlexCity.showModal(hintUsed ? 2 : 3);
   }, STAMP_AT + MODAL_GAP);
-}
-
-function showModal(stars) {
-  document.getElementById('modal-stars').textContent =
-    '★'.repeat(stars) + '☆'.repeat(3 - stars);
-
-  const seal = document.querySelector('.modal-seal');
-  seal.style.animation = 'none';
-  requestAnimationFrame(() => {
-    seal.style.animation = '';
-    document.getElementById('modal-overlay').classList.add('on');
-    // 🎊 modal 一彈出就撒花
-    fireConfetti('pass');
-  });
-}
-
-function closeModal() {
-  document.getElementById('modal-overlay').classList.remove('on');
 }
 
 /* ── 🎊 CONFETTI ─────────────────────────────
@@ -249,6 +179,7 @@ function openFinishModal() {
   fireConfetti('finish');
 }
 
+/* ── RESET ──────────────────────────────────── */
 function doReset() {
   hasSuccess  = false;
   hintUsed    = false;
@@ -261,63 +192,10 @@ function doReset() {
   document.querySelectorAll('#live-view .stall.booth-flipped')
           .forEach(el => el.classList.remove('booth-flipped'));
   hideHint();
-  closeModal();
-  hideDrop();
+  FlexCity.closeModal();
+  FlexCity.hideDrop();
   updateStyles();
   editor.focus();
-}
-
-/* ── KEYBOARD ───────────────────────────────── */
-editor.addEventListener('keydown', e => {
-  if (suggestions.length && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
-    e.preventDefault();
-    selIdx = e.key === 'ArrowDown'
-      ? (selIdx + 1) % suggestions.length
-      : (selIdx - 1 + suggestions.length) % suggestions.length;
-    renderDrop(getWordBefore().word);
-    return;
-  }
-
-  if (e.key === 'Tab') {
-    e.preventDefault();
-    if (suggestions.length) {
-      applyIdx(selIdx);
-    } else {
-      const p = editor.selectionStart;
-      editor.value = editor.value.substring(0, p) + '  ' + editor.value.substring(p);
-      editor.setSelectionRange(p + 2, p + 2);
-      updateStyles();
-    }
-    return;
-  }
-
-  if (e.key === 'Escape') { hideDrop(); return; }
-  if (e.key === 'Enter' && suggestions.length) { hideDrop(); }
-});
-
-editor.addEventListener('input', () => {
-  updateStyles();
-  updateSuggestions();
-});
-
-document.addEventListener('mousedown', e => {
-  if (!e.target.closest('#emmet-drop') && !e.target.closest('#css-editor')) {
-    hideDrop();
-  }
-});
-
-resetBtn.addEventListener('click', doReset);
-document.getElementById('modal-close-btn').addEventListener('click', closeModal);
-document.getElementById('modal-overlay').addEventListener('click', e => {
-  if (e.target === e.currentTarget) closeModal();
-});
-
-/* 「完成挑戰」按鈕：撒花 → 開 finish modal （不直接跳轉）*/
-const finishBtn = document.getElementById('next-level-inline-btn');
-if (finishBtn) {
-  finishBtn.addEventListener('click', () => {
-    openFinishModal();
-  });
 }
 
 /* ── DYNAMIC ROW DETECTION ────────────────────
@@ -349,6 +227,19 @@ function scheduleFlipRecompute() {
 
 /* 視窗大小變動 → 重算 (排版會自動 wrap，flip 也要跟著走) */
 window.addEventListener('resize', scheduleFlipRecompute);
+
+/* ── WIRE UP ────────────────────────────────── */
+FlexCity.initEmmet({ editor, emmet: EMMET, onApply: updateStyles });
+FlexCity.wireModalDismiss();
+resetBtn.addEventListener('click', doReset);
+
+/* 「完成挑戰」按鈕：撒花 → 開 finish modal （不直接跳轉）*/
+const finishBtn = document.getElementById('next-level-inline-btn');
+if (finishBtn) {
+  finishBtn.addEventListener('click', () => {
+    openFinishModal();
+  });
+}
 
 /* ── INIT ───────────────────────────────────── */
 updateStyles();

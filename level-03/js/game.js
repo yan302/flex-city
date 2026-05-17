@@ -1,6 +1,7 @@
 /* ============================================================
-   Skyline Architect — Level 03 / Cat Café
+   Flex City — Level 03 / Cat Café
    level-03/js/game.js
+   共用引擎：shared/flex-city.js
    ============================================================ */
 
 const editor    = document.getElementById('css-editor');
@@ -34,74 +35,8 @@ const EMMET = {
   'fdr' : 'flex-direction: row;',
 };
 
-let selIdx      = 0;
-let suggestions = [];
-let hasSuccess  = false;
-let hintUsed    = false;
-
-/* ── EMMET ─────────────────────────────────── */
-function getWordBefore() {
-  const pos    = editor.selectionStart;
-  const before = editor.value.substring(0, pos);
-  const m      = before.match(/([a-z0-9]+)$/);
-  return m ? { word: m[1], start: pos - m[1].length } : { word: '', start: pos };
-}
-
-function updateSuggestions() {
-  const { word } = getWordBefore();
-  if (!word) { hideDrop(); return; }
-  suggestions = Object.entries(EMMET)
-    .filter(([a]) => a.startsWith(word))
-    .sort((a, b) => a[0].length - b[0].length);
-  selIdx = 0;
-  suggestions.length ? renderDrop(word) : hideDrop();
-}
-
-function renderDrop(typed) {
-  const list = document.getElementById('emmet-list');
-  list.innerHTML = suggestions.map(([abbr, val], i) => {
-    const t = '<span class="e-typed">' + abbr.slice(0, typed.length) + '</span>';
-    const r = abbr.length > typed.length
-      ? '<span class="e-rest">' + abbr.slice(typed.length) + '</span>'
-      : '';
-    return '<div class="e-item' + (i === selIdx ? ' sel' : '') + '"'
-      + ' onmousedown="applyIdx(' + i + ')">'
-      + '<span class="e-abbr">' + t + r + '</span>'
-      + '<span class="e-arr">→</span>'
-      + '<span class="e-val">' + val + '</span>'
-      + '</div>';
-  }).join('');
-  positionDrop();
-  document.getElementById('emmet-drop').style.display = 'block';
-}
-
-function positionDrop() {
-  const drop = document.getElementById('emmet-drop');
-  const r    = editor.getBoundingClientRect();
-  drop.style.left   = r.left + 'px';
-  drop.style.width  = Math.max(r.width, 320) + 'px';
-  drop.style.bottom = (window.innerHeight - r.top + 2) + 'px';
-  drop.style.top    = 'auto';
-}
-
-function hideDrop() {
-  document.getElementById('emmet-drop').style.display = 'none';
-  suggestions = [];
-  selIdx = 0;
-}
-
-function applyIdx(i) {
-  if (i === undefined) i = selIdx;
-  if (!suggestions[i]) return;
-  const [, val]  = suggestions[i];
-  const { start } = getWordBefore();
-  const end       = editor.selectionStart;
-  editor.value    = editor.value.substring(0, start) + val + editor.value.substring(end);
-  editor.setSelectionRange(start + val.length, start + val.length);
-  hideDrop();
-  updateStyles();
-  editor.focus();
-}
+let hasSuccess = false;
+let hintUsed   = false;
 
 /* ── LIVE PREVIEW + ANSWER CHECK ────────────── */
 function updateStyles() {
@@ -133,6 +68,98 @@ function checkAnswer() {
   } else {
     hideHint();
   }
+
+  // 同步更新生氣狀態（貼太近 / 貼牆 → 加 .is-angry 到對應 .cat-slot）
+  updateAngryCats(clean, hasJC, hasBetween);
+}
+
+/* ── ANGRY / HAPPY CATS：依輸入狀態切換情緒 ──
+   四個獨立 class：
+   - .is-angry     → 顯示 💢 + 偶爾晃動（不舒服）
+   - .is-sleeping  → 顯示 💤（呼吸般輕緩擺動）
+   - .has-bubble   → 顯示對話框（內容由 JS 動態設定文字）
+   - .bubble-tight → 短內容（•‿•）的對話框 padding 減半
+
+   邏輯（左數位置以 1-indexed 描述，slots 索引為 0-indexed）：
+   - hasJC（有空間了：space-around / evenly）
+       → 第 3 隻（罐頭塔貓）頭頂浮現 💤（蜷在罐頭上睡）
+         第 5 隻（毛線球籃）對話框「•‿•」（在玩）
+         第 6 隻（吊床貓）頭頂浮現 💤（在吊床上打盹）
+         其他貓冷靜無語
+   - hasBetween（頭尾貼牆）
+       → 第 1 + 第 6 隻 💢（不講話）
+   - hasCenterOrEdges（center / flex-start / flex-end）
+       → 全員 💢（被擠成一團）
+   - 其他（完全沒輸入 / 不相關輸入）
+       → 第 2, 3, 6 隻 💢（自然站位時的不適點）
+   ──────────────────────────────────────────── */
+function updateAngryCats(clean, hasJC, hasBetween) {
+  const slots = document.querySelectorAll('#live-stage .cat-slot');
+  if (!slots.length) return;
+  // 先全部冷靜，清空 mark 文字 + 對話框
+  slots.forEach(s => {
+    s.classList.remove('is-angry', 'is-sleeping', 'has-bubble', 'bubble-tight');
+    const b = s.querySelector('.angry-bubble');
+    if (b) b.textContent = '';
+    const m = s.querySelector('.angry-mark');
+    if (m) m.textContent = '';
+  });
+
+  if (hasJC) {
+    // 有空間 → 罐頭塔/吊床貓打盹（💤 漂浮 mark）、毛線球籃在玩（•‿• 對話框）
+    setSleep(slots[2]);                            // 第 3 隻（cat_1 罐頭塔貓）
+    setBubble(slots[4], '•‿•', /* tight */ true); // 第 5 隻（cat_4 毛線球籃）
+    setSleep(slots[5]);                            // 第 6 隻（cat_5 吊床貓）
+    return;
+  }
+
+  if (hasBetween) {
+    // 頭尾貼牆 → 只生氣、不講話
+    setAngry(slots[0]);
+    setAngry(slots[slots.length - 1]);
+    return;
+  }
+
+  // 偵測「明確選擇 JC 卻沒分散」的擠壓情境
+  const hasCenterOrEdges =
+    clean.includes('justify-content:center')      ||
+    clean.includes('justify-content:flex-start')  ||
+    clean.includes('justify-content:flex-end');
+
+  if (hasCenterOrEdges) {
+    // 全部擠成一團 → 每隻都生氣
+    slots.forEach(s => setAngry(s));
+  } else {
+    // 完全沒輸入 / 不相關輸入 → 只第 2, 3, 6 隻不舒服
+    [1, 2, 5].forEach(i => setAngry(slots[i]));
+  }
+}
+
+/* helper：標記生氣（💢 漂浮 mark + 偶爾晃動） */
+function setAngry(slot) {
+  if (!slot) return;
+  const m = slot.querySelector('.angry-mark');
+  if (m) m.textContent = '💢';
+  slot.classList.add('is-angry');
+}
+
+/* helper：標記睡覺（💤 漂浮 mark + 呼吸般擺動） */
+function setSleep(slot) {
+  if (!slot) return;
+  const m = slot.querySelector('.angry-mark');
+  if (m) m.textContent = '💤';
+  slot.classList.add('is-sleeping');
+}
+
+/* helper：為指定 slot 設定對話框文字並打開
+   tight=true 時加上 .bubble-tight，CSS 把左右 padding 減半（給單一符號用）*/
+function setBubble(slot, text, tight) {
+  if (!slot) return;
+  const b = slot.querySelector('.angry-bubble');
+  if (!b) return;
+  b.textContent = text;
+  slot.classList.add('has-bubble');
+  if (tight) slot.classList.add('bubble-tight');
 }
 
 function showHint(html) {
@@ -157,19 +184,28 @@ function doSuccess() {
   gameBody.classList.add('is-success');
   stamp.classList.add('active');
   editor.classList.add('text-green-700', 'font-bold');
-  // 延遲 6.5 秒——這關有 2 組屬性家族（justify-content 5 個 + align-items 5 個），
-  // 基準 3.5s + 多 3s 給雙倍屬性
+
+  // 🎉 任天堂式過關大字（蓋章後 0.5s 彈出）
+  setTimeout(() => {
+    FlexCity.celebrate({
+      title:    '咖啡廳開幕',
+      titleSvg: '../shared/titles/title-03.svg',
+      subtitle: 'LEVEL 3 CLEAR',
+      accent:   '#ec4899',                       // 咖啡廳粉
+      glow:     'rgba(236,72,153,.75)',
+      palette:  ['#ec4899', '#facc15', '#22c55e', '#a855f7', '#f97316'],
+    });
+  }, 500);
+
+  // 延遲 5.5 秒——這關屬性家族多（5+5），多給時間讀，但比之前 6.5s 收緊
   const stars = hintUsed ? 2 : 3;
   setTimeout(() => {
-    if (hasSuccess) showModal(stars);
-  }, 6500);
+    if (hasSuccess) FlexCity.showModal(stars, { onShow: applyModalCopy });
+  }, 5500);
 }
 
-function showModal(stars) {
-  document.getElementById('modal-stars').textContent =
-    '★'.repeat(stars) + '☆'.repeat(3 - stars);
-
-  // 依使用者實際採用的 justify-content 值動態調整 modal 描述
+/* modal 彈出時依使用者實際採用的 justify-content 值改寫描述 */
+function applyModalCopy() {
   const propEl = document.getElementById('modal-prop');
   const descEl = document.getElementById('modal-desc');
   const jc = window.__finalJC || 'space-around';
@@ -181,19 +217,9 @@ function showModal(stars) {
       ? 'space-evenly：每個間隔完全相等，每隻貓都有真正「剛剛好」的距離。'
       : 'space-around：每隻貓周圍都保留空間。配上 align-items: flex-end，貓咪們站到地板上各自安心。';
   }
-
-  const seal = document.querySelector('.modal-seal');
-  seal.style.animation = 'none';
-  requestAnimationFrame(() => {
-    seal.style.animation = '';
-    document.getElementById('modal-overlay').classList.add('on');
-  });
 }
 
-function closeModal() {
-  document.getElementById('modal-overlay').classList.remove('on');
-}
-
+/* ── RESET ──────────────────────────────────── */
 function doReset() {
   hasSuccess  = false;
   hintUsed    = false;
@@ -203,55 +229,17 @@ function doReset() {
   stamp.classList.remove('active');
   gameBody.classList.remove('is-success');
   hideHint();
-  closeModal();
-  hideDrop();
+  FlexCity.closeModal();
+  FlexCity.hideDrop();
   updateStyles();
   editor.focus();
 }
 
-/* ── KEYBOARD ───────────────────────────────── */
-editor.addEventListener('keydown', e => {
-  if (suggestions.length && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
-    e.preventDefault();
-    selIdx = e.key === 'ArrowDown'
-      ? (selIdx + 1) % suggestions.length
-      : (selIdx - 1 + suggestions.length) % suggestions.length;
-    renderDrop(getWordBefore().word);
-    return;
-  }
-
-  if (e.key === 'Tab') {
-    e.preventDefault();
-    if (suggestions.length) {
-      applyIdx(selIdx);
-    } else {
-      const p = editor.selectionStart;
-      editor.value = editor.value.substring(0, p) + '  ' + editor.value.substring(p);
-      editor.setSelectionRange(p + 2, p + 2);
-      updateStyles();
-    }
-    return;
-  }
-
-  if (e.key === 'Escape') { hideDrop(); return; }
-  if (e.key === 'Enter' && suggestions.length) { hideDrop(); }
-});
-
-editor.addEventListener('input', () => {
-  updateStyles();
-  updateSuggestions();
-});
-
-document.addEventListener('mousedown', e => {
-  if (!e.target.closest('#emmet-drop') && !e.target.closest('#css-editor')) {
-    hideDrop();
-  }
-});
-
+/* ── WIRE UP ────────────────────────────────── */
+FlexCity.initEmmet({ editor, emmet: EMMET, onApply: updateStyles });
+FlexCity.wireModalDismiss();
 resetBtn.addEventListener('click', doReset);
-document.getElementById('modal-close-btn').addEventListener('click', closeModal);
-document.getElementById('modal-overlay').addEventListener('click', e => {
-  if (e.target === e.currentTarget) closeModal();
-});
-
 editor.focus();
+
+/* 初始化時跑一次 → 空輸入觸發「全員擠在一起 → 全員生氣」的視覺提示 */
+updateStyles();

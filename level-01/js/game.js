@@ -1,6 +1,9 @@
 /* ============================================================
-   Skyline Architect — Level 01 / Wake Up
+   Flex City — Level 01 / Wake Up
    level-01/js/game.js
+
+   共用引擎：shared/flex-city.js（Emmet 補全 + modal 基底）
+   本檔只保留 L01 專屬：答案判定、過關編排（stagger 進場）。
    ============================================================ */
 
 const editor    = document.getElementById('css-editor');
@@ -8,9 +11,10 @@ const dynStyles = document.getElementById('dynamic-styles');
 const stamp     = document.getElementById('pass-stamp');
 const resetBtn  = document.getElementById('reset-btn');
 const gameBody  = document.getElementById('game-body');
+const liveCity  = document.getElementById('live-city');
 
-const ANSWER_KEY = 'display:flex';
-const MODAL_DELAY_MS = 3500;  // 過關後等動畫播完再出 modal（留時間閱讀屬性家族）
+const ANSWER_KEY     = 'display:flex';
+const MODAL_DELAY_MS = 5000;  // 過關後等 stagger + 大字慶祝播完再出 modal
 
 /* ── EMMET ABBREVIATIONS ────────────────────── */
 const EMMET = {
@@ -27,74 +31,8 @@ const EMMET = {
   'fww' : 'flex-wrap: wrap;',
 };
 
-let selIdx      = 0;
-let suggestions = [];
-let hasSuccess  = false;
-let hintUsed    = false;
-
-/* ── EMMET ─────────────────────────────────── */
-function getWordBefore() {
-  const pos    = editor.selectionStart;
-  const before = editor.value.substring(0, pos);
-  const m      = before.match(/([a-z0-9]+)$/);
-  return m ? { word: m[1], start: pos - m[1].length } : { word: '', start: pos };
-}
-
-function updateSuggestions() {
-  const { word } = getWordBefore();
-  if (!word) { hideDrop(); return; }
-  suggestions = Object.entries(EMMET)
-    .filter(([a]) => a.startsWith(word))
-    .sort((a, b) => a[0].length - b[0].length);
-  selIdx = 0;
-  suggestions.length ? renderDrop(word) : hideDrop();
-}
-
-function renderDrop(typed) {
-  const list = document.getElementById('emmet-list');
-  list.innerHTML = suggestions.map(([abbr, val], i) => {
-    const t = '<span class="e-typed">' + abbr.slice(0, typed.length) + '</span>';
-    const r = abbr.length > typed.length
-      ? '<span class="e-rest">' + abbr.slice(typed.length) + '</span>'
-      : '';
-    return '<div class="e-item' + (i === selIdx ? ' sel' : '') + '"'
-      + ' onmousedown="applyIdx(' + i + ')">'
-      + '<span class="e-abbr">' + t + r + '</span>'
-      + '<span class="e-arr">→</span>'
-      + '<span class="e-val">' + val + '</span>'
-      + '</div>';
-  }).join('');
-  positionDrop();
-  document.getElementById('emmet-drop').style.display = 'block';
-}
-
-function positionDrop() {
-  const drop = document.getElementById('emmet-drop');
-  const r    = editor.getBoundingClientRect();
-  drop.style.left   = r.left + 'px';
-  drop.style.width  = Math.max(r.width, 320) + 'px';
-  drop.style.bottom = (window.innerHeight - r.top + 2) + 'px';
-  drop.style.top    = 'auto';
-}
-
-function hideDrop() {
-  document.getElementById('emmet-drop').style.display = 'none';
-  suggestions = [];
-  selIdx = 0;
-}
-
-function applyIdx(i) {
-  if (i === undefined) i = selIdx;
-  if (!suggestions[i]) return;
-  const [, val]  = suggestions[i];
-  const { start } = getWordBefore();
-  const end       = editor.selectionStart;
-  editor.value    = editor.value.substring(0, start) + val + editor.value.substring(end);
-  editor.setSelectionRange(start + val.length, start + val.length);
-  hideDrop();
-  updateStyles();
-  editor.focus();
-}
+let hasSuccess = false;
+let hintUsed   = false;
 
 /* ── LIVE PREVIEW + ANSWER CHECK ────────────── */
 function updateStyles() {
@@ -109,89 +47,69 @@ function checkAnswer() {
   if (clean.includes(ANSWER_KEY)) doSuccess();
 }
 
+/* ── SUCCESS（stagger 進場編排）──────────────
+   這是玩家第一次「輸入一句 CSS → 城市真的活了」的時刻，
+   讓建築依序就位，而不是同時瞬移：
+     拍 0  : 城市甦醒（天空轉藍、雲淡入）
+     拍 1  : 摩天輪先亮燈
+     拍 2+ : 大樓由左至右依序升起（CSS animation-delay 處理）
+     最後  : 噴水池彈跳就位 + 噴水
+   ────────────────────────────────────────── */
 function doSuccess() {
   hasSuccess = true;
   dynStyles.textContent =
     `#live-city { display:flex; align-items:flex-end; justify-content:space-around; }`;
-  gameBody.classList.add('is-success');
-  stamp.classList.add('active');
-  editor.classList.add('text-green-700', 'font-bold');
-  setTimeout(() => showModal(hintUsed ? 2 : 3), MODAL_DELAY_MS);
-}
 
-function showModal(stars) {
-  document.getElementById('modal-stars').textContent =
-    '★'.repeat(stars) + '☆'.repeat(3 - stars);
+  // 先進入「甦醒」狀態（天空 / 雲），建築維持隱形等待 stagger
+  gameBody.classList.add('is-awakening');
 
-  const seal = document.querySelector('.modal-seal');
-  seal.style.animation = 'none';
+  // 下一幀加上 staggering，觸發每棟建築的 animation-delay 序列進場
   requestAnimationFrame(() => {
-    seal.style.animation = '';
-    document.getElementById('modal-overlay').classList.add('on');
+    requestAnimationFrame(() => liveCity.classList.add('staggering'));
   });
+
+  // 序列尾聲再蓋章（與噴水池就位同步）
+  setTimeout(() => {
+    gameBody.classList.add('is-success');
+    stamp.classList.add('active');
+    editor.classList.add('text-green-700', 'font-bold');
+  }, 2600);
+
+  // 🎉 任天堂式過關大字（緊接著蓋章後彈出）
+  setTimeout(() => {
+    FlexCity.celebrate({
+      title:    '城市甦醒',
+      titleSvg: '../shared/titles/title-01.svg',  // 手繪描邊字
+      subtitle: 'LEVEL 1 CLEAR',
+      accent:   '#f97316',                       // 日出橘 → sub-pill 底色
+      glow:     'rgba(251,146,60,.75)',
+      palette:  ['#f97316', '#fbbf24', '#22c55e', '#3b82f6', '#ec4899'],
+    });
+  }, 2800);
+
+  setTimeout(() => {
+    if (hasSuccess) FlexCity.showModal(hintUsed ? 2 : 3);
+  }, MODAL_DELAY_MS);
 }
 
-function closeModal() {
-  document.getElementById('modal-overlay').classList.remove('on');
-}
-
+/* ── RESET ──────────────────────────────────── */
 function doReset() {
-  hasSuccess  = false;
-  hintUsed    = false;
+  hasSuccess = false;
+  hintUsed   = false;
   editor.value = '';
   editor.classList.remove('text-green-700', 'font-bold');
   editor.disabled = false;
   stamp.classList.remove('active');
-  gameBody.classList.remove('is-success');
-  closeModal();
-  hideDrop();
+  gameBody.classList.remove('is-success', 'is-awakening');
+  liveCity.classList.remove('staggering');
+  FlexCity.closeModal();
+  FlexCity.hideDrop();
   updateStyles();
   editor.focus();
 }
 
-/* ── KEYBOARD ───────────────────────────────── */
-editor.addEventListener('keydown', e => {
-  if (suggestions.length && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
-    e.preventDefault();
-    selIdx = e.key === 'ArrowDown'
-      ? (selIdx + 1) % suggestions.length
-      : (selIdx - 1 + suggestions.length) % suggestions.length;
-    renderDrop(getWordBefore().word);
-    return;
-  }
-
-  if (e.key === 'Tab') {
-    e.preventDefault();
-    if (suggestions.length) {
-      applyIdx(selIdx);
-    } else {
-      const p = editor.selectionStart;
-      editor.value = editor.value.substring(0, p) + '  ' + editor.value.substring(p);
-      editor.setSelectionRange(p + 2, p + 2);
-      updateStyles();
-    }
-    return;
-  }
-
-  if (e.key === 'Escape') { hideDrop(); return; }
-  if (e.key === 'Enter' && suggestions.length) { hideDrop(); }
-});
-
-editor.addEventListener('input', () => {
-  updateStyles();
-  updateSuggestions();
-});
-
-document.addEventListener('mousedown', e => {
-  if (!e.target.closest('#emmet-drop') && !e.target.closest('#css-editor')) {
-    hideDrop();
-  }
-});
-
+/* ── WIRE UP ────────────────────────────────── */
+FlexCity.initEmmet({ editor, emmet: EMMET, onApply: updateStyles });
+FlexCity.wireModalDismiss();
 resetBtn.addEventListener('click', doReset);
-document.getElementById('modal-close-btn').addEventListener('click', closeModal);
-document.getElementById('modal-overlay').addEventListener('click', e => {
-  if (e.target === e.currentTarget) closeModal();
-});
-
 editor.focus();

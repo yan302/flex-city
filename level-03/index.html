@@ -106,12 +106,36 @@
             <div class="cafe-floor"></div>
             <div class="cafe-sign">CAT CAFÉ</div>
             <div id="live-stage" class="cafe-stage">
-              <img src="./assets/cat_2.svg" alt="貓抓柱"     class="cat-item ci-tall">
-              <img src="./assets/cat_3.svg" alt="豆袋椅"     class="cat-item ci-round">
-              <img src="./assets/cat_1.svg" alt="貓罐頭塔"   class="cat-item ci-mid">
-              <img src="./assets/cat_7.svg" alt="桌椅貓"     class="cat-item ci-scene">
-              <img src="./assets/cat_4.svg" alt="毛線球籃"   class="cat-item ci-sofa">
-              <img src="./assets/cat_5.svg" alt="吊床貓"     class="cat-item ci-long">
+              <div class="cat-slot ci-tall">
+                <img src="./assets/cat_2.svg" alt="貓抓柱" class="cat-item">
+                <div class="angry-mark" aria-hidden="true">💢</div>
+                <div class="angry-bubble">貼太近了啦！</div>
+              </div>
+              <div class="cat-slot ci-round">
+                <img src="./assets/cat_3.svg" alt="豆袋椅" class="cat-item">
+                <div class="angry-mark" aria-hidden="true">💢</div>
+                <div class="angry-bubble">貼太近了啦！</div>
+              </div>
+              <div class="cat-slot ci-mid">
+                <img src="./assets/cat_1.svg" alt="貓罐頭塔" class="cat-item">
+                <div class="angry-mark" aria-hidden="true">💢</div>
+                <div class="angry-bubble">貼太近了啦！</div>
+              </div>
+              <div class="cat-slot ci-scene">
+                <img src="./assets/cat_7.svg" alt="桌椅貓" class="cat-item">
+                <div class="angry-mark" aria-hidden="true">💢</div>
+                <div class="angry-bubble">貼太近了啦！</div>
+              </div>
+              <div class="cat-slot ci-sofa">
+                <img src="./assets/cat_4.svg" alt="毛線球籃" class="cat-item">
+                <div class="angry-mark" aria-hidden="true">💢</div>
+                <div class="angry-bubble">貼太近了啦！</div>
+              </div>
+              <div class="cat-slot ci-long">
+                <img src="./assets/cat_5.svg" alt="吊床貓" class="cat-item">
+                <div class="angry-mark" aria-hidden="true">💢</div>
+                <div class="angry-bubble">貼太近了啦！</div>
+              </div>
             </div>
           </div>
         </div>
@@ -177,10 +201,10 @@
         <div class="modal-seal-text">PASS</div>
       </div>
 
-      <div class="modal-title">咖啡廳開幕！</div>
-      <div class="modal-prop">justify-content: space-around;
+      <div class="modal-title" id="modal-title">咖啡廳開幕！</div>
+      <div class="modal-prop" id="modal-prop">justify-content: space-around;
 align-items: flex-end;</div>
-      <div class="modal-desc">justify-content 在主軸上分配空間，align-items 在交叉軸上對齊。兩者搭配，店裡的每隻貓都找到屬於自己的角落。</div>
+      <div class="modal-desc" id="modal-desc">justify-content 在主軸上分配空間，align-items 在交叉軸上對齊。兩者搭配，店裡的每隻貓都找到屬於自己的角落。</div>
       <div class="modal-stars" id="modal-stars">★★★</div>
 
       <div style="display:flex; gap:10px; justify-content:center;">
@@ -199,6 +223,8 @@ align-items: flex-end;</div>
   </div>
 
   <style id="dynamic-styles"></style>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <script src="../shared/flex-city.js"></script>
   <script src="./js/game.js"></script>
 </body>
 </html>

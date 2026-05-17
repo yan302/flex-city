@@ -540,7 +540,7 @@ textarea {
   font-size: .78rem; color: var(--dim);
   line-height: 1.55; margin-bottom: 20px;
 }
-.modal-stars { font-size: 1.3rem; letter-spacing: 4px; margin-bottom: 22px; }
+.modal-stars { font-size: 1.3rem; letter-spacing: 4px; margin-bottom: 22px; color: #fbbf24; }
 
 .btn-next-level {
   background: var(--ink); color: var(--paper);

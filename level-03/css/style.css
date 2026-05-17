@@ -217,23 +217,147 @@ body {
   align-items: flex-end;
 }
 
-/* ── CAT ITEMS ──────────────────────────────── */
+/* ── CAT SLOT (wrapper：定位 angry mark / bubble，flex child) ─── */
+.cat-slot {
+  position: relative;
+  flex-shrink: 0;
+  display: block;
+  transition: transform .4s cubic-bezier(.34,1.4,.64,1);
+}
+
 .cat-item {
   display: block;
+  width: 100%;          /* 填滿外層 .cat-slot 的寬度 */
   height: auto;
   user-select: none;
   -webkit-user-drag: none;
   filter: drop-shadow(2px 3px 0 rgba(0, 0, 0, 0.15));
-  flex-shrink: 0;
   transition: transform .4s cubic-bezier(.34,1.4,.64,1);
 }
 
+/* 寬度 class 套在 .cat-slot 上（圖片以 100% 填滿） */
 .ci-tall  { width: 45px; }   /* cat_2 — 貓抓柱   (×1.10) */
 .ci-round { width: 70px; }   /* cat_3 — 豆袋椅 */
 .ci-mid   { width: 41px; }   /* cat_1 — 貓罐頭塔 */
 .ci-scene { width: 92px; }   /* cat_7 — 桌椅貓   (×1.05) */
 .ci-sofa  { width: 71px; }   /* cat_4 — 毛線球籃 (×0.90) */
 .ci-long  { width: 99px; }   /* cat_5 — 吊床貓 */
+
+/* ── ANGRY 狀態：當貓被擠到 ─────────────────────
+   觸發時機由 JS 在 .cat-slot 上加 / 移除 .is-angry
+   ──────────────────────────────────────────── */
+/* 情緒符號（💢 / 💤）— 貓頭右上角浮現
+   元素名仍叫 .angry-mark 是歷史名稱，現在通用於各種情緒 */
+.angry-mark {
+  position: absolute;
+  top: -14px;
+  right: -6px;
+  font-size: 22px;
+  line-height: 1;
+  z-index: 12;
+  opacity: 0;
+  transform: scale(0) rotate(-15deg);
+  transition: opacity .25s, transform .35s cubic-bezier(.34, 1.7, .5, 1);
+  pointer-events: none;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,.35));
+}
+
+/* 生氣：彈出 + 脈動旋轉 */
+.cat-slot.is-angry .angry-mark {
+  opacity: 1;
+  transform: scale(1) rotate(0);
+  animation: catAngryPulse .8s infinite alternate ease-in-out;
+}
+@keyframes catAngryPulse {
+  0%   { transform: scale(1)    rotate(-6deg); }
+  100% { transform: scale(1.18) rotate(6deg); }
+}
+
+/* 睡覺：飄在頭頂更高位置（-28px），緩慢呼吸 */
+.cat-slot.is-sleeping .angry-mark {
+  top: -28px;
+  opacity: 1;
+  transform: scale(1) rotate(0);
+  animation: catSleepBreath 2.6s infinite ease-in-out;
+}
+@keyframes catSleepBreath {
+  0%, 100% { transform: scale(1)    translateY(0);   }
+  50%      { transform: scale(1.08) translateY(-3px); }
+}
+
+/* 「貼太近了啦！」對話框 — 沿用 L02 floor-label 樣式（白底圓角 + 黑色尖角） */
+.angry-bubble {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translate(-50%, -100%);
+  background: #fff;
+  border: 2px solid var(--ink, #0e0c09);
+  border-radius: 14px;
+  padding: 3px 10px;
+  font-size: .68rem;
+  font-weight: 700;
+  color: var(--ink, #0e0c09);
+  white-space: nowrap;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.18);
+  letter-spacing: .03em;
+  z-index: 11;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s ease, transform .3s cubic-bezier(.34,1.6,.5,1);
+}
+.angry-bubble::before,
+.angry-bubble::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  border-style: solid;
+}
+.angry-bubble::before {
+  bottom: -10px;
+  border-width: 10px 7px 0 7px;
+  border-color: var(--ink, #0e0c09) transparent transparent transparent;
+  z-index: 1;
+}
+.angry-bubble::after {
+  bottom: -6px;
+  border-width: 7px 5px 0 5px;
+  border-color: #fff transparent transparent transparent;
+  z-index: 2;
+}
+/* 對話框只在 .has-bubble 的 cat-slot 顯示
+   （內容由 JS 動態設定——生氣時可能講話、開心時可能說 z / •‿•） */
+.cat-slot.has-bubble .angry-bubble {
+  opacity: 1;
+  transform: translate(-50%, -100%) translateY(-4px);
+}
+
+/* 短內容（💤 / •‿• 等單一符號）的左右 padding 減半，
+   避免 bubble 看起來太扁、太寬 */
+.cat-slot.bubble-tight .angry-bubble {
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+/* 偶爾晃動：4 秒一輪，前 5%（~200ms）抖動，剩下時間靜止 */
+.cat-slot.is-angry .cat-item {
+  animation: catAngryShudder 4s infinite ease-in-out;
+}
+@keyframes catAngryShudder {
+  0%, 5%, 100% { transform: translate(0, 0) rotate(0deg); }
+  0.5%  { transform: translate(-1.5px, .5px) rotate(-1.2deg); }
+  1%    { transform: translate( 1.5px,-.5px) rotate( 1.2deg); }
+  1.5%  { transform: translate(-1px,  -.5px) rotate(-.8deg); }
+  2%    { transform: translate( 1px,   .5px) rotate( .8deg); }
+  2.5%  { transform: translate(-.5px,  .5px) rotate(-.3deg); }
+  3%    { transform: translate( .5px, -.5px) rotate( .3deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cat-slot.is-angry .cat-item,
+  .cat-slot.is-angry .angry-mark,
+  .cat-slot.is-sleeping .angry-mark { animation: none; }
+}
 
 #target-cafe .cat-item { transform: scale(.78); transform-origin: bottom center; }
 #target-cafe .ci-tall  { width: 45px; }
@@ -439,7 +563,7 @@ textarea {
   font-size: .78rem; color: var(--dim);
   line-height: 1.55; margin-bottom: 20px;
 }
-.modal-stars { font-size: 1.3rem; letter-spacing: 4px; margin-bottom: 22px; }
+.modal-stars { font-size: 1.3rem; letter-spacing: 4px; margin-bottom: 22px; color: #fbbf24; }
 
 .btn-next-level {
   background: var(--ink); color: var(--paper);

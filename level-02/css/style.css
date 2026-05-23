@@ -333,7 +333,9 @@ body {
   gap: 0 !important;
   padding: 0 !important;
   margin: 0 !important;
-  transform: none !important;
+  /* transform 不用 !important，否則會壓制 is-half 的錯位晃動 animation
+     （!important 的 author rule 在 cascade 上贏過 animation） */
+  transform: none;
   filter: none !important;
 }
 
@@ -380,6 +382,72 @@ body {
   transform: translateY(-50%);
   border-width: 5px 7px 5px 0;
   border-color: transparent #fff transparent transparent;
+}
+
+/* ============================================================
+   錯位大樓晃動（is-half = flex-direction: column 但沒加 -reverse）
+   參考使用者提供的地震模擬器，把核心觀念簡化成純 CSS：
+     1. 鋸齒錯位偏移（--mis-x）── 每層左右錯開，看起來疊歪了
+     2. 鞭梢效應（--wob-x / --wob-rot）── 上層擺幅最大、底層貼地最穩
+     3. 每層獨立動畫週期與相位 ── 各自的彈簧不同步，整棟扭動起來
+   transform-origin: bottom center → 每層以下緣為支點搖擺，像鉸接結構。
+   ============================================================ */
+.is-half #live-city .tower-stack .floor-card {
+  transform-origin: bottom center;
+  animation: floorWobble 0.7s ease-in-out infinite;
+}
+
+@keyframes floorWobble {
+  /* 純晃動：圍繞原位置左右擺 + 微旋轉，不引入任何靜態錯位偏移。
+     負號一律用「0px - var * 正值」這種二元減法（左右都有空白），
+     避免踩到 `* -0.7px` 那種「乘以負值字面量」的 calc 解析坑。 */
+  0%, 100% {
+    transform: translateX(calc(var(--wob-x, 0) * 1px))
+               rotate(calc(var(--wob-rot, 0) * 1deg));
+  }
+  25% {
+    transform: translateX(calc(0px - var(--wob-x, 0) * 0.7px))
+               rotate(calc(0deg - var(--wob-rot, 0) * 0.7deg));
+  }
+  50% {
+    transform: translateX(calc(var(--wob-x, 0) * 0.5px))
+               rotate(calc(var(--wob-rot, 0) * 0.5deg));
+  }
+  75% {
+    transform: translateX(calc(0px - var(--wob-x, 0) * 0.8px))
+               rotate(calc(0deg - var(--wob-rot, 0) * 0.8deg));
+  }
+}
+
+/* 每層獨立的晃動振幅（鞭梢效應：上層擺幅最大、底層貼地不動）
+   + 不同週期 / 相位，讓五層彼此不同步、整棟扭動起來。
+   DOM 順序：1 = 停車場（is-half 直立時被推到頂層）→ 振幅最大；
+            5 = 頂樓花園（落到地面當地基）→ 振幅最小。
+   沒有錯位偏移以後，純粹靠晃動傳達「結構不穩」，所以振幅比上一版略加大。*/
+.is-half #live-city .tower-stack .floor-card:nth-child(1) {
+  --wob-x: 3;    --wob-rot: 1.0;
+  animation-duration: 0.55s;
+}
+.is-half #live-city .tower-stack .floor-card:nth-child(2) {
+  --wob-x: 2.5;  --wob-rot: 0.75;
+  animation-duration: 0.6s;
+  animation-delay: 0.06s;
+}
+.is-half #live-city .tower-stack .floor-card:nth-child(3) {
+  --wob-x: 2;    --wob-rot: 0.5;
+  animation-duration: 0.65s;
+  animation-delay: 0.12s;
+}
+.is-half #live-city .tower-stack .floor-card:nth-child(4) {
+  --wob-x: 1.5;  --wob-rot: 0.3;
+  animation-duration: 0.7s;
+  animation-delay: 0.18s;
+}
+.is-half #live-city .tower-stack .floor-card:nth-child(5) {
+  /* 頂樓花園貼地 → 當地基，幾乎不動 */
+  --wob-x: 0.5;  --wob-rot: 0.15;
+  animation-duration: 0.8s;
+  animation-delay: 0.24s;
 }
 
 /* ── LABEL LINE ─────────────────────────────── */

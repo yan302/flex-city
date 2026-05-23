@@ -343,6 +343,202 @@ window.FlexCity = (function () {
   }
 
   /* ============================================================
+     FIREWORKS — 真．煙火引擎（自製 canvas 版）
+     火箭從畫布底部升空 → 抵達目標 → 爆炸 → 重力粒子 + 拖尾。
+     視覺風格參考使用者提供的 Disney「Happily Ever After」demo，
+     但抽掉音效／反射／米奇心型，只留「經典花冠 + 垂柳流星」+
+     太空微重 + 歡樂盛典頻率，並關進指定畫布內當背景施放。
+
+     用法：
+       FlexCity.fireworks({
+         canvas:    '#live-city .sky-fireworks', // 必填，畫布 selector 或 element
+         duration:  3000,            // 自動發射期長度（ms），結束後粒子自然飄落完
+         gravity:   0.06,            // 太空微重（垂柳會再 × 0.4 = 更慢落）
+         frequency: 60,              // 0–100，歡樂盛典 ≈ 60（約每 260ms 一發）
+         types:     ['classic', 'willow'],  // 經典花冠 + 垂柳
+         palette:   [{r,g,b}, …],    // RGB 物件陣列；不傳就用預設五色（橘/黃/綠/藍/桃）
+       });
+
+     不傳 canvas → 直接 return（這個版本一定要關進畫布）。
+     ============================================================ */
+  function fireworks(opts) {
+    opts = opts || {};
+    const cv = typeof opts.canvas === 'string'
+      ? document.querySelector(opts.canvas)
+      : opts.canvas;
+    if (!cv || !cv.getContext) return;
+
+    const c2d      = cv.getContext('2d');
+    const duration = opts.duration  || 3000;
+    const gravity  = opts.gravity   != null ? opts.gravity   : 0.06;
+    const freq     = opts.frequency != null ? opts.frequency : 60;
+    const types    = opts.types     || ['classic', 'willow'];
+    const palette  = opts.palette   || [
+      { r: 249, g: 115, b: 22  },   // 日出橘
+      { r: 251, g: 191, b: 36  },   // 金黃
+      { r: 34,  g: 197, b: 94  },   // 翠綠
+      { r: 59,  g: 130, b: 246 },   // 寶藍
+      { r: 236, g: 72,  b: 153 },   // 粉桃
+    ];
+
+    /* 畫布要跟著 DPR 重新設尺寸，否則 HiDPI 螢幕會糊掉。
+       setTransform 之後座標可以直接用 CSS px（W × H = 畫布的 CSS 尺寸）。 */
+    let W = 0, H = 0;
+    function resize() {
+      const dpr  = window.devicePixelRatio || 1;
+      const rect = cv.getBoundingClientRect();
+      W = rect.width;  H = rect.height;
+      cv.width  = W * dpr;
+      cv.height = H * dpr;
+      c2d.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    resize();
+    const onResize = () => resize();
+    window.addEventListener('resize', onResize);
+
+    const rand      = (a, b) => Math.random() * (b - a) + a;
+    const pickColor = ()     => palette[Math.floor(Math.random() * palette.length)];
+    const pickType  = ()     => types[Math.floor(Math.random() * types.length)];
+
+    const rockets   = [];
+    const particles = [];
+    const end       = Date.now() + duration;
+    let lastLaunch  = 0;
+    let raf         = null;
+
+    /* 發射：從底部隨機 x 出發，飛向畫面上 5–40% 高度的目標點 */
+    function launch() {
+      const tx = rand(W * 0.15, W * 0.85);
+      const ty = rand(H * 0.05, H * 0.40);
+      const sx = tx + rand(-20, 20);
+      const sy = H + 4;
+      rockets.push({
+        x: sx, y: sy, tx, ty,
+        angle: Math.atan2(ty - sy, tx - sx),
+        speed: 2, accel: 1.04,
+        color: pickColor(),
+        type:  pickType(),
+        trail: [[sx, sy], [sx, sy], [sx, sy], [sx, sy]],
+      });
+    }
+
+    /* 抵達目標 → 爆炸。經典 = 球狀放射；垂柳 = 慢速、長尾、低重力。 */
+    function explode(r) {
+      const isWillow = r.type === 'willow';
+      const count = isWillow ? 70 : 55;   // 配合 'lighter' 加法疊色已經夠亮，少 25% 粒子減負擔
+      for (let i = 0; i < count; i++) {
+        const a = Math.random() * Math.PI * 2;
+        const v = isWillow ? rand(0.8, 2.2) : rand(1.6, 4.6);
+        particles.push({
+          x: r.x, y: r.y,
+          vx: Math.cos(a) * v,
+          vy: Math.sin(a) * v,
+          color: r.color,
+          type:  r.type,
+          alpha: 1,
+          decay:    isWillow ? rand(0.008, 0.014) : rand(0.014, 0.022),
+          friction: isWillow ? 0.985 : 0.94,
+          gravity:  isWillow ? gravity * 0.4 : gravity,
+          trail: [],
+        });
+      }
+    }
+
+    function frame() {
+      const now  = Date.now();
+      const left = end - now;
+
+      /* 拖尾淡化：用 destination-out 把畫布上已存在的像素「擦掉一點點」，
+         而不是塗黑——這樣下層的 CSS 夜空才會透過畫布顯現出來，
+         而粒子拖尾會在 ~10 幀內漸漸消失，做出彗星尾巴的效果。 */
+      c2d.save();
+      c2d.globalCompositeOperation = 'destination-out';
+      c2d.fillStyle = 'rgba(0,0,0,0.18)';
+      c2d.fillRect(0, 0, W, H);
+      c2d.restore();
+
+      /* 自動發射節奏：freq 60 ≈ 260ms / 發 */
+      if (left > 0) {
+        const interval = Math.max(80, 800 - freq * 9);
+        if (now - lastLaunch > interval) {
+          launch();
+          lastLaunch = now;
+        }
+      }
+
+      /* 更新火箭 */
+      for (let i = rockets.length - 1; i >= 0; i--) {
+        const r = rockets[i];
+        r.trail.pop();
+        r.trail.unshift([r.x, r.y]);
+        r.speed *= r.accel;
+        const d = Math.hypot(r.tx - r.x, r.ty - r.y);
+        if (d <= r.speed) {
+          explode(r);
+          rockets.splice(i, 1);
+        } else {
+          r.x += Math.cos(r.angle) * r.speed;
+          r.y += Math.sin(r.angle) * r.speed;
+        }
+      }
+      /* 畫火箭 + 粒子：用 'lighter'（加法疊色）取代 shadowBlur 做發光。
+         shadowBlur 每筆都要跑一次 offscreen gaussian blur，幾百顆粒子下來
+         主執行緒會被吃光、連 CSS stagger 都跟著卡；'lighter' 則是 GPU 友善的
+         混色模式，粒子重疊處會自然加色爆白成熱核心，視覺上反而更像真煙火。 */
+      c2d.save();
+      c2d.globalCompositeOperation = 'lighter';
+
+      for (const r of rockets) {
+        const p0 = r.trail[r.trail.length - 1];
+        c2d.beginPath();
+        c2d.moveTo(p0[0], p0[1]);
+        c2d.lineTo(r.x, r.y);
+        c2d.strokeStyle = `rgba(${r.color.r},${r.color.g},${r.color.b},0.95)`;
+        c2d.lineWidth   = 2;
+        c2d.stroke();
+      }
+
+      /* 更新爆炸粒子（摩擦 + 重力 + alpha 衰減）—— 只算數、不畫圖 */
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.trail.unshift([p.x, p.y]);
+        if (p.trail.length > 4) p.trail.pop();
+        p.vx *= p.friction;
+        p.vy *= p.friction;
+        p.vy += p.gravity;
+        p.x  += p.vx;
+        p.y  += p.vy;
+        p.alpha -= p.decay;
+        if (p.alpha <= 0) particles.splice(i, 1);
+      }
+
+      for (const p of particles) {
+        if (!p.trail.length) continue;
+        const last = p.trail[p.trail.length - 1];
+        c2d.beginPath();
+        c2d.moveTo(last[0], last[1]);
+        c2d.lineTo(p.x, p.y);
+        c2d.strokeStyle = `rgba(${p.color.r},${p.color.g},${p.color.b},${p.alpha})`;
+        c2d.lineWidth   = Math.max(0.6, (p.type === 'willow' ? 1.4 : 2.1) * p.alpha);
+        c2d.stroke();
+      }
+
+      c2d.restore();
+
+      /* 結束條件：發射期過完、火箭打完、粒子也全淡完 → 收尾擦淨畫布 */
+      if (left <= 0 && rockets.length === 0 && particles.length === 0) {
+        window.removeEventListener('resize', onResize);
+        cancelAnimationFrame(raf);
+        c2d.clearRect(0, 0, W, H);
+        return;
+      }
+      raf = requestAnimationFrame(frame);
+    }
+
+    raf = requestAnimationFrame(frame);
+  }
+
+  /* ============================================================
      全域樣式注入（每關共用）
      - nav 上的 F 標誌 hover 時，右側浮現「← 回首頁」字樣
      ============================================================ */
@@ -388,5 +584,6 @@ window.FlexCity = (function () {
     wireModalDismiss,
     hideDrop,
     celebrate,
+    fireworks,
   };
 })();

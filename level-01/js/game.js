@@ -14,7 +14,7 @@ const gameBody  = document.getElementById('game-body');
 const liveCity  = document.getElementById('live-city');
 
 const ANSWER_KEY     = 'display:flex';
-const MODAL_DELAY_MS = 5000;  // 過關後等 stagger + 大字慶祝播完再出 modal
+const MODAL_DELAY_MS = 5500;  // 過關後等 stagger + 大字慶祝播完再出 modal（大字 3.0s + banner 2.3s + 緩衝 0.2s）
 
 /* ── EMMET ABBREVIATIONS ────────────────────── */
 const EMMET = {
@@ -50,7 +50,7 @@ function checkAnswer() {
 /* ── SUCCESS（stagger 進場編排）──────────────
    這是玩家第一次「輸入一句 CSS → 城市真的活了」的時刻，
    讓建築依序就位，而不是同時瞬移：
-     拍 0  : 城市甦醒（天空轉藍、雲淡入）
+     拍 0  : 城市入夜（夜空降臨、雲淡入、背景煙火施放）
      拍 1  : 摩天輪先亮燈
      拍 2+ : 大樓由左至右依序升起（CSS animation-delay 處理）
      最後  : 噴水池彈跳就位 + 噴水
@@ -60,13 +60,27 @@ function doSuccess() {
   dynStyles.textContent =
     `#live-city { display:flex; align-items:flex-end; justify-content:space-around; }`;
 
-  // 先進入「甦醒」狀態（天空 / 雲），建築維持隱形等待 stagger
+  // 先進入「甦醒」狀態（夜空 / 雲），建築維持隱形等待 stagger
   gameBody.classList.add('is-awakening');
 
   // 下一幀加上 staggering，觸發每棟建築的 animation-delay 序列進場
   requestAnimationFrame(() => {
     requestAnimationFrame(() => liveCity.classList.add('staggering'));
   });
+
+  // 🎆 夜空煙火：等天色轉暗後（~0.7s）在建築後面的背景施放，陪著 stagger 進場。
+  // 用自製 canvas 引擎（火箭升空→爆炸→重力粒子+拖尾），跟 Disney demo 同一風格；
+  // 設定值：太空微重（gravity 0.06）+ 歡樂盛典（freq 60 ≈ 260ms 一發）+
+  // 經典花冠 + 垂柳流星——跟使用者前面確認過的偏好一致。
+  setTimeout(() => {
+    FlexCity.fireworks({
+      canvas:    '#live-city .sky-fireworks',
+      duration:  4500,                   // 發射期延長到 4.5s，加上粒子尾聲飄落約 5.7s 整段視覺
+      gravity:   0.06,
+      frequency: 60,
+      types:     ['classic', 'willow'],
+    });
+  }, 700);
 
   // 序列尾聲再蓋章（與噴水池就位同步）
   setTimeout(() => {
@@ -75,7 +89,7 @@ function doSuccess() {
     editor.classList.add('text-green-700', 'font-bold');
   }, 2600);
 
-  // 🎉 任天堂式過關大字（緊接著蓋章後彈出）
+  // 🎉 任天堂式過關大字 + 原本的撒花（緊接著蓋章後彈出）
   setTimeout(() => {
     FlexCity.celebrate({
       title:    '城市甦醒',
@@ -85,7 +99,7 @@ function doSuccess() {
       glow:     'rgba(251,146,60,.75)',
       palette:  ['#f97316', '#fbbf24', '#22c55e', '#3b82f6', '#ec4899'],
     });
-  }, 2500);
+  }, 3000);
 
   setTimeout(() => {
     if (hasSuccess) FlexCity.showModal(hintUsed ? 2 : 3);
